@@ -85,7 +85,11 @@ function render(d){
   document.getElementById('criticalCount').textContent=d.counts.critical;
   document.getElementById('warningCount').textContent=d.counts.warning;
   document.getElementById('passedCount').textContent=d.counts.pass;
-  document.getElementById('checks').innerHTML=d.checks.map(c=>`<article class="check"><div class="checktop"><div><h3>${esc(c.title)}</h3><p>${esc(c.detail)}</p></div><span class="badge ${c.level==='pass'?'pass':c.level==='critical'?'fail':'review'}">${esc(c.level.toUpperCase())}</span></div>${c.fix?`<div class="fix"><b>Suggested fix:</b> ${esc(c.fix)}</div>`:''}</article>`).join('');
+  document.getElementById('checks').innerHTML=d.checks.map(function(c){
+    var badgeClass=c.level==='pass'?'pass':c.level==='critical'?'fail':'review';
+    var fixHtml=c.fix?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':'';
+    return '<article class="check"><div class="checktop"><div><h3>'+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+badgeClass+'">'+esc(c.level.toUpperCase())+'</span></div>'+fixHtml+'</article>';
+  }).join('');
   results.scrollIntoView({behavior:'smooth',block:'start'});
 }
 </script>
@@ -188,7 +192,7 @@ const SECRET_PATTERNS = [
   ["Stripe live secret", /\bsk_live_[A-Za-z0-9]{16,}\b/g],
   ["GitHub token", /\b(?:ghp|github_pat)_[A-Za-z0-9_]{20,}\b/g],
   ["AWS access key", /\bAKIA[0-9A-Z]{16}\b/g],
-  ["Supabase service-role JWT marker", /\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/g]
+  ["Supabase service-role marker", /\bservice_role\b.{0,80}\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/gi]
 ];
 
 function detectSecrets(text) {
