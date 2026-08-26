@@ -1,12 +1,26 @@
-# DeployPass
+# DeployPass Scanner V1
 
-Security checks for AI-built apps before deployment.
+Passive, public-surface security checks for AI-built web apps.
 
-## Cloudflare Worker
+## Routes
 
-- Entry: `src/index.js`
-- Config: `wrangler.jsonc`
-- Deploy: `npx wrangler deploy`
-- Health check: `/health`
+- `/` — Scanner UI
+- `/health` — Health check
+- `POST /api/scan` — Passive scan API
 
-This first version is intentionally minimal so the initial GitHub → Cloudflare deployment is easy to verify before building the scanner.
+## Deployment
+
+Cloudflare Workers deployment command:
+
+```bash
+npx wrangler deploy
+```
+
+No build command is required.
+
+## Safety scope
+
+V1 only inspects resources that a normal browser can retrieve publicly. It does not brute-force paths,
+bypass authentication, exploit vulnerabilities, scan ports, or attempt destructive actions.
+
+A PASS means "no obvious issue was detected by these checks", not "the application is secure".
