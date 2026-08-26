@@ -1,4 +1,4 @@
-# DeployPass Scanner V2
+# DeployPass Scanner V2.1
 
 Passive, public-surface security checks for AI-built web apps.
 
@@ -24,3 +24,10 @@ V1 only inspects resources that a normal browser can retrieve publicly. It does 
 bypass authentication, exploit vulnerabilities, scan ports, or attempt destructive actions.
 
 A PASS means "no obvious issue was detected by these checks", not "the application is secure".
+
+## V2.1 changes
+
+- Top 3 fixes always render when warnings/critical findings exist.
+- Cookie checks use N/A when no Set-Cookie header is observable.
+- N/A findings do not affect the score.
+- Scope/version wording updated to V2.1.

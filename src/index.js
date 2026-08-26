@@ -21,7 +21,7 @@ const HTML = `<!doctype html>
     #status{display:none;margin:18px 0 0;text-align:left}.statusline{padding:13px 14px;border-radius:12px;background:var(--soft);color:#314158}
     #results{display:none;padding:32px 0 64px}.summary{display:grid;grid-template-columns:210px 1fr;gap:18px}.scorecard,.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
     .score{font-size:64px;font-weight:900;letter-spacing:-.06em;line-height:1}.score small{font-size:20px;color:#718096}.verdict{display:inline-block;margin-top:13px;font-size:13px;font-weight:900;letter-spacing:.08em;padding:7px 10px;border-radius:999px}
-    .pass{background:#e9f8f0;color:var(--good)}.review{background:#fff6db;color:var(--warn)}.fail{background:#fff0ee;color:var(--bad)}
+    .pass{background:#e9f8f0;color:var(--good)}.review{background:#fff6db;color:var(--warn)}.fail{background:#fff0ee;color:var(--bad)}.na{background:#eef2f7;color:#65748a}
     .summary h2{font-size:28px;margin:0 0 8px}.summary p{margin:0;color:var(--muted)}.stats{display:flex;gap:18px;margin-top:17px;flex-wrap:wrap}.stat b{font-size:20px}.stat span{display:block;font-size:12px;color:#748196;text-transform:uppercase;letter-spacing:.08em}
     .checks{display:grid;gap:12px;margin-top:18px}.check{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}.checktop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.check h3{margin:0;font-size:17px}.badge{font-size:12px;font-weight:900;padding:5px 8px;border-radius:999px;white-space:nowrap}.check p{margin:7px 0 0;color:var(--muted);font-size:14px}.fix{margin-top:10px;padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px;color:#405065}
     .sectiontitle{font-size:23px;margin:26px 0 10px}.scope{margin:30px 0 70px;background:#eef4fb;border-radius:18px;padding:18px 20px;color:#405065}.scope b{color:var(--text)}
@@ -53,12 +53,12 @@ const HTML = `<!doctype html>
       <div class="card"><h2 id="summaryTitle">Scan complete</h2><p id="summaryText"></p><div class="stats">
         <div class="stat"><b id="criticalCount">0</b><span>Critical</span></div>
         <div class="stat"><b id="warningCount">0</b><span>Warnings</span></div>
-        <div class="stat"><b id="passedCount">0</b><span>Passed</span></div>
+        <div class="stat"><b id="passedCount">0</b><span>Passed</span></div><div class="stat"><b id="naCount">0</b><span>N/A</span></div>
       </div></div>
     </div>
-    <div id="topFixesWrap" style="display:none"><h2 class="sectiontitle">Top things to fix before deployment</h2><div class="checks" id="topFixes"></div></div><h2 class="sectiontitle">Checks</h2>
+    <div id="topFixesWrap" style="display:none"><h2 class="sectiontitle">Top things to fix before deployment</h2><div class="card" style="padding:14px"><div class="checks" id="topFixes" style="margin-top:0"></div></div></div><h2 class="sectiontitle">Checks</h2>
     <div class="checks" id="checks"></div>
-    <div class="scope"><b>Important:</b> DeployPass V2 examines public responses and a limited sample of same-origin frontend assets. A PASS means no obvious issue was detected by these checks; it does not prove an application is secure.</div>
+    <div class="scope"><b>Important:</b> DeployPass V2.1 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
   </div></section>
 </main>
 <footer><div class="wrap">© 2026 DeployPass · Security checks for AI-built apps before deployment.</div></footer>
@@ -85,12 +85,22 @@ function render(d){
   document.getElementById('criticalCount').textContent=d.counts.critical;
   document.getElementById('warningCount').textContent=d.counts.warning;
   document.getElementById('passedCount').textContent=d.counts.pass;
+  document.getElementById('naCount').textContent=d.counts.na||0;
   var tf=document.getElementById('topFixesWrap'), tfl=document.getElementById('topFixes');
-  if(d.topFixes&&d.topFixes.length){tf.style.display='block';tfl.innerHTML=d.topFixes.map(function(c,i){return '<article class="check"><div class="checktop"><div><h3>'+ (i+1)+'. '+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+(c.level==='critical'?'fail':'review')+'">'+(c.level==='critical'?'FIX NOW':'FIX NEXT')+'</span></div>'+(c.fix?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':'')+'</article>';}).join('');}else{tf.style.display='none';tfl.innerHTML='';}
+  var fixes=(d.topFixes&&d.topFixes.length)?d.topFixes:(d.checks||[]).filter(function(c){return c.level==='critical'||c.level==='warning';}).slice(0,3);
+  if(fixes.length){
+    tf.style.display='block';
+    tfl.innerHTML=fixes.map(function(c,i){
+      return '<article class="check"><div class="checktop"><div><h3>'+ (i+1)+'. '+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+(c.level==='critical'?'fail':'review')+'">'+(c.level==='critical'?'FIX NOW':'FIX NEXT')+'</span></div>'+(c.fix?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':'')+'</article>';
+    }).join('');
+  } else {
+    tf.style.display='none'; tfl.innerHTML='';
+  }
   document.getElementById('checks').innerHTML=d.checks.map(function(c){
-    var badgeClass=c.level==='pass'?'pass':c.level==='critical'?'fail':'review';
+    var badgeClass=c.level==='pass'?'pass':c.level==='critical'?'fail':c.level==='na'?'na':'review';
+    var label=c.level==='na'?'N/A':c.level.toUpperCase();
     var fixHtml=c.fix?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':'';
-    return '<article class="check"><div class="checktop"><div><h3>'+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+badgeClass+'">'+esc(c.level.toUpperCase())+'</span></div>'+fixHtml+'</article>';
+    return '<article class="check"><div class="checktop"><div><h3>'+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+badgeClass+'">'+esc(label)+'</span></div>'+fixHtml+'</article>';
   }).join('');
   results.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -302,9 +312,9 @@ async function scan(target) {
   add(checks,cors.level,"CORS configuration",cors.detail,cors.level==="pass"?"":"Restrict allowed origins to the sites that actually need browser access, and avoid wildcard origins for sensitive responses.");
 
   const cookies=cookieReview(h);
-  add(checks,!cookies.present||cookies.secure?"pass":"warning","Cookie Secure flag",!cookies.present?"No Set-Cookie header was observed on the scanned page.":cookies.secure?"Observed cookies include the Secure flag.":"At least one observed cookie may be missing the Secure flag.",!cookies.present||cookies.secure?"":"Mark session and sensitive cookies Secure so browsers only send them over HTTPS.");
-  add(checks,!cookies.present||cookies.httpOnly?"pass":"warning","Cookie HttpOnly flag",!cookies.present?"No Set-Cookie header was observed on the scanned page.":cookies.httpOnly?"Observed cookies include the HttpOnly flag.":"At least one observed cookie may be missing the HttpOnly flag.",!cookies.present||cookies.httpOnly?"":"Use HttpOnly for cookies that do not need JavaScript access, especially session cookies.");
-  add(checks,!cookies.present||cookies.sameSite?"pass":"warning","Cookie SameSite policy",!cookies.present?"No Set-Cookie header was observed on the scanned page.":cookies.sameSite?"Observed cookies declare a SameSite policy.":"At least one observed cookie may be missing an explicit SameSite policy.",!cookies.present||cookies.sameSite?"":"Set SameSite=Lax or Strict where possible; use None only when cross-site use is required and pair it with Secure.");
+  add(checks,!cookies.present?"na":cookies.secure?"pass":"warning","Cookie Secure flag",!cookies.present?"Not observed: the scanned response did not set a cookie.":cookies.secure?"All observed cookies include the Secure flag.":"At least one observed cookie may be missing the Secure flag.",!cookies.present||cookies.secure?"":"Mark session and sensitive cookies Secure so browsers only send them over HTTPS.");
+  add(checks,!cookies.present?"na":cookies.httpOnly?"pass":"warning","Cookie HttpOnly flag",!cookies.present?"Not observed: the scanned response did not set a cookie.":cookies.httpOnly?"All observed cookies include the HttpOnly flag.":"At least one observed cookie may be missing the HttpOnly flag.",!cookies.present||cookies.httpOnly?"":"Use HttpOnly for cookies that do not need JavaScript access, especially session cookies.");
+  add(checks,!cookies.present?"na":cookies.sameSite?"pass":"warning","Cookie SameSite policy",!cookies.present?"Not observed: the scanned response did not set a cookie.":cookies.sameSite?"All observed cookies declare a SameSite policy.":"At least one observed cookie may be missing an explicit SameSite policy.",!cookies.present||cookies.sameSite?"":"Set SameSite=Lax or Strict where possible; use None only when cross-site use is required and pair it with Secure.");
 
   const mixed=hasMixedContent(html,finalUrl);
   add(checks,mixed?"warning":"pass","Mixed content",mixed?"The HTTPS page contains at least one obvious http:// resource reference.":"No obvious http:// resource reference was detected in the scanned HTML.",mixed?"Serve all page resources over HTTPS and replace hard-coded http:// URLs.":"");
@@ -378,11 +388,11 @@ async function scan(target) {
   let score=100;
   for(const c of checks){if(c.level==="critical") score-=weights[c.title]||25; else if(c.level==="warning") score-=weights[c.title]||5;}
   score=Math.max(0,Math.min(100,score));
-  const counts={critical:checks.filter(c=>c.level==="critical").length,warning:checks.filter(c=>c.level==="warning").length,pass:checks.filter(c=>c.level==="pass").length};
+  const counts={critical:checks.filter(c=>c.level==="critical").length,warning:checks.filter(c=>c.level==="warning").length,pass:checks.filter(c=>c.level==="pass").length,na:checks.filter(c=>c.level==="na").length};
   const verdict=counts.critical?"FAIL":score<90?"REVIEW":"PASS";
-  const topFixes=checks.filter(c=>c.level!=="pass").sort((a,b)=>(b.level==="critical"?100:weights[b.title]||5)-(a.level==="critical"?100:weights[a.title]||5)).slice(0,3);
+  const topFixes=checks.filter(c=>c.level==="critical"||c.level==="warning").sort((a,b)=>(b.level==="critical"?100:weights[b.title]||5)-(a.level==="critical"?100:weights[a.title]||5)).slice(0,3);
 
-  return {ok:true,target:finalUrl.origin,finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v2"}};
+  return {ok:true,target:finalUrl.origin,finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v2.1"}};
 }
 
 export default {
@@ -390,7 +400,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
-      return json({ok:true, service:"deploypass", version:"scanner-v2"});
+      return json({ok:true, service:"deploypass", version:"scanner-v2.1"});
     }
 
     if (url.pathname === "/api/scan") {
