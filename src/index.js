@@ -56,9 +56,9 @@ const HTML = `<!doctype html>
         <div class="stat"><b id="passedCount">0</b><span>Passed</span></div>
       </div></div>
     </div>
-    <h2 class="sectiontitle">Checks</h2>
+    <div id="topFixesWrap" style="display:none"><h2 class="sectiontitle">Top things to fix before deployment</h2><div class="checks" id="topFixes"></div></div><h2 class="sectiontitle">Checks</h2>
     <div class="checks" id="checks"></div>
-    <div class="scope"><b>Important:</b> DeployPass V1 only examines public responses and a small number of same-origin frontend assets. A PASS means no obvious issue was detected by these checks; it does not prove an application is secure.</div>
+    <div class="scope"><b>Important:</b> DeployPass V2 examines public responses and a limited sample of same-origin frontend assets. A PASS means no obvious issue was detected by these checks; it does not prove an application is secure.</div>
   </div></section>
 </main>
 <footer><div class="wrap">© 2026 DeployPass · Security checks for AI-built apps before deployment.</div></footer>
@@ -85,6 +85,8 @@ function render(d){
   document.getElementById('criticalCount').textContent=d.counts.critical;
   document.getElementById('warningCount').textContent=d.counts.warning;
   document.getElementById('passedCount').textContent=d.counts.pass;
+  var tf=document.getElementById('topFixesWrap'), tfl=document.getElementById('topFixes');
+  if(d.topFixes&&d.topFixes.length){tf.style.display='block';tfl.innerHTML=d.topFixes.map(function(c,i){return '<article class="check"><div class="checktop"><div><h3>'+ (i+1)+'. '+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+(c.level==='critical'?'fail':'review')+'">'+(c.level==='critical'?'FIX NOW':'FIX NEXT')+'</span></div>'+(c.fix?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':'')+'</article>';}).join('');}else{tf.style.display='none';tfl.innerHTML='';}
   document.getElementById('checks').innerHTML=d.checks.map(function(c){
     var badgeClass=c.level==='pass'?'pass':c.level==='critical'?'fail':'review';
     var fixHtml=c.fix?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':'';
@@ -204,6 +206,49 @@ function detectSecrets(text) {
   return [...new Set(hits)];
 }
 
+function cookieReview(headers) {
+  const raw = headers.get("set-cookie") || "";
+  if (!raw) return {present:false, secure:true, httpOnly:true, sameSite:true};
+  // Workers may expose combined Set-Cookie; these checks are conservative indicators.
+  const parts = raw.split(/,(?=[^;,]+=)/g);
+  return {
+    present:true,
+    secure:parts.every(x=>/;\s*secure\b/i.test(x)),
+    httpOnly:parts.every(x=>/;\s*httponly\b/i.test(x)),
+    sameSite:parts.every(x=>/;\s*samesite=(?:lax|strict|none)\b/i.test(x))
+  };
+}
+function hasMixedContent(html, finalUrl) {
+  if (finalUrl.protocol !== "https:") return false;
+  return /(?:src|href|action)\s*=\s*["']http:\/\//i.test(html);
+}
+function debugIndicators(text) {
+  const pats=[/\bNODE_ENV\s*[:=]\s*["']development["']/i,/\bdebug\s*[:=]\s*true\b/i,/\bwebpackHotUpdate\b/i,/\b__vite_ping\b/i,/\bReact Refresh\b/i];
+  return pats.some(r=>r.test(text));
+}
+function verboseErrorIndicators(text) {
+  const pats=[/\b(?:TypeError|ReferenceError|SyntaxError):[^<\n]{0,180}/i,/\bat\s+[\w$.<>]+\s*\([^\n)]*:\d+:\d+\)/,/\bTraceback \(most recent call last\):/i,/\bException in thread\b/i];
+  return pats.some(r=>r.test(text));
+}
+function publicEnvIndicators(text) {
+  const names=[];
+  const pats=[["VITE environment values",/\bVITE_[A-Z0-9_]{3,}\b/g],["NEXT_PUBLIC environment values",/\bNEXT_PUBLIC_[A-Z0-9_]{3,}\b/g],["REACT_APP environment values",/\bREACT_APP_[A-Z0-9_]{3,}\b/g]];
+  for(const [name,re] of pats){re.lastIndex=0;if(re.test(text))names.push(name)}
+  return names;
+}
+function corsReview(headers) {
+  const origin=headers.get("access-control-allow-origin");
+  const creds=(headers.get("access-control-allow-credentials")||"").toLowerCase()==="true";
+  if(!origin) return {level:"pass",detail:"No permissive CORS response header was observed on the scanned page."};
+  if(origin.trim()==="*" && creds) return {level:"critical",detail:"The response advertises wildcard CORS together with credentials. Review this configuration carefully."};
+  if(origin.trim()==="*") return {level:"warning",detail:"Access-Control-Allow-Origin: * was detected on the scanned page."};
+  return {level:"pass",detail:`CORS is restricted to ${origin}.`};
+}
+function versionDisclosure(headers) {
+  const vals=[headers.get("x-powered-by"),headers.get("x-aspnet-version"),headers.get("x-generator")].filter(Boolean);
+  return vals;
+}
+
 function add(checks, level, title, detail, fix="") { checks.push({level,title,detail,fix}); }
 
 async function scan(target) {
@@ -253,6 +298,20 @@ async function scan(target) {
     frame ? "" : "Use CSP frame-ancestors (preferred) or X-Frame-Options where appropriate."
   );
 
+  const cors=corsReview(h);
+  add(checks,cors.level,"CORS configuration",cors.detail,cors.level==="pass"?"":"Restrict allowed origins to the sites that actually need browser access, and avoid wildcard origins for sensitive responses.");
+
+  const cookies=cookieReview(h);
+  add(checks,!cookies.present||cookies.secure?"pass":"warning","Cookie Secure flag",!cookies.present?"No Set-Cookie header was observed on the scanned page.":cookies.secure?"Observed cookies include the Secure flag.":"At least one observed cookie may be missing the Secure flag.",!cookies.present||cookies.secure?"":"Mark session and sensitive cookies Secure so browsers only send them over HTTPS.");
+  add(checks,!cookies.present||cookies.httpOnly?"pass":"warning","Cookie HttpOnly flag",!cookies.present?"No Set-Cookie header was observed on the scanned page.":cookies.httpOnly?"Observed cookies include the HttpOnly flag.":"At least one observed cookie may be missing the HttpOnly flag.",!cookies.present||cookies.httpOnly?"":"Use HttpOnly for cookies that do not need JavaScript access, especially session cookies.");
+  add(checks,!cookies.present||cookies.sameSite?"pass":"warning","Cookie SameSite policy",!cookies.present?"No Set-Cookie header was observed on the scanned page.":cookies.sameSite?"Observed cookies declare a SameSite policy.":"At least one observed cookie may be missing an explicit SameSite policy.",!cookies.present||cookies.sameSite?"":"Set SameSite=Lax or Strict where possible; use None only when cross-site use is required and pair it with Secure.");
+
+  const mixed=hasMixedContent(html,finalUrl);
+  add(checks,mixed?"warning":"pass","Mixed content",mixed?"The HTTPS page contains at least one obvious http:// resource reference.":"No obvious http:// resource reference was detected in the scanned HTML.",mixed?"Serve all page resources over HTTPS and replace hard-coded http:// URLs.":"");
+
+  const versions=versionDisclosure(h);
+  add(checks,versions.length?"warning":"pass","Framework version disclosure",versions.length?`Potential framework/runtime disclosure headers were observed: ${versions.join(", ")}.`:"No obvious framework/runtime version disclosure header was detected.",versions.length?"Remove unnecessary technology/version disclosure headers where your platform allows it.":"");
+
   const scripts = extractScripts(html, finalUrl.toString());
   let combined = html;
   let mapHints = sourceMapHints(html);
@@ -276,6 +335,15 @@ async function scan(target) {
     secrets.length ? `Potential secret-like values detected: ${secrets.join(", ")}. Manual review is required because pattern matching can produce false positives.` : `No high-confidence secret patterns were detected in the page and ${fetchedScripts} same-origin frontend asset(s) checked.`,
     secrets.length ? "Rotate any real secret immediately, remove it from client-side code, and move privileged calls to a server-side endpoint." : ""
   );
+
+  const debug=debugIndicators(combined);
+  add(checks,debug?"warning":"pass","Development / debug indicators",debug?"Possible development or debug-mode indicators were found in sampled public frontend content.":"No obvious development/debug indicator was found in sampled public frontend content.",debug?"Verify the production build disables debug mode, hot reload, verbose diagnostics, and development-only tooling.":"");
+
+  const verbose=verboseErrorIndicators(html);
+  add(checks,verbose?"warning":"pass","Verbose error leakage",verbose?"The public HTML contains text resembling a stack trace or verbose runtime error.":"No obvious stack trace or verbose runtime error was detected in the scanned HTML.",verbose?"Return generic production error pages to users and keep detailed traces in server-side logs only.":"");
+
+  const envs=publicEnvIndicators(combined);
+  add(checks,envs.length?"warning":"pass","Public environment variables",envs.length?`Public-prefixed environment variable names were detected: ${envs.join(", ")}. These prefixes are often intentionally client-visible, but values should be reviewed for sensitive data.`:"No common public environment-variable prefixes were detected in the sampled frontend content.",envs.length?"Review every client-exposed environment value and ensure no privileged credential or private endpoint secret is included.":"");
 
   const uniqueMaps = [...new Set(mapHints)].filter(Boolean);
   let publicMap = null;
@@ -301,26 +369,20 @@ async function scan(target) {
     ""
   );
 
-  let score = 100;
-  for (const c of checks) score -= c.level === "critical" ? 24 : c.level === "warning" ? 7 : 0;
-  score = Math.max(0, Math.min(100, score));
-  const counts = {
-    critical: checks.filter(c=>c.level==="critical").length,
-    warning: checks.filter(c=>c.level==="warning").length,
-    pass: checks.filter(c=>c.level==="pass").length
+  const weights={
+    "HTTPS":30,"Frontend secret patterns":32,"CORS configuration":20,
+    "Content Security Policy":8,"HSTS":6,"MIME sniffing protection":5,"Referrer Policy":3,"Clickjacking protection":7,
+    "Cookie Secure flag":6,"Cookie HttpOnly flag":6,"Cookie SameSite policy":4,"Mixed content":8,"Framework version disclosure":3,
+    "Development / debug indicators":8,"Verbose error leakage":10,"Public environment variables":6,"Source map exposure":7
   };
-  const verdict = counts.critical ? "FAIL" : counts.warning >= 3 ? "REVIEW" : "PASS";
+  let score=100;
+  for(const c of checks){if(c.level==="critical") score-=weights[c.title]||25; else if(c.level==="warning") score-=weights[c.title]||5;}
+  score=Math.max(0,Math.min(100,score));
+  const counts={critical:checks.filter(c=>c.level==="critical").length,warning:checks.filter(c=>c.level==="warning").length,pass:checks.filter(c=>c.level==="pass").length};
+  const verdict=counts.critical?"FAIL":score<90?"REVIEW":"PASS";
+  const topFixes=checks.filter(c=>c.level!=="pass").sort((a,b)=>(b.level==="critical"?100:weights[b.title]||5)-(a.level==="critical"?100:weights[a.title]||5)).slice(0,3);
 
-  return {
-    ok: true,
-    target: finalUrl.origin,
-    finalUrl: finalUrl.toString(),
-    score,
-    verdict,
-    counts,
-    checks,
-    meta: {durationMs: Date.now()-started, scriptsSampled: fetchedScripts, scope:"passive-public-v1"}
-  };
+  return {ok:true,target:finalUrl.origin,finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v2"}};
 }
 
 export default {
@@ -328,7 +390,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
-      return json({ok:true, service:"deploypass", version:"scanner-v1"});
+      return json({ok:true, service:"deploypass", version:"scanner-v2"});
     }
 
     if (url.pathname === "/api/scan") {

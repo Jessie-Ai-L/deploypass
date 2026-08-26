@@ -1,4 +1,4 @@
-# DeployPass Scanner V1
+# DeployPass Scanner V2
 
 Passive, public-surface security checks for AI-built web apps.
 
