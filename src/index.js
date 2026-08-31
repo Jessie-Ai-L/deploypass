@@ -82,6 +82,7 @@ const HTML = `<!doctype html>
     <nav class="navlinks" aria-label="Primary">
       <a href="#how-it-works">How it works</a>
       <a href="#what-we-check">What we check</a>
+      <a href="/security-headers-checker">Security Headers Checker</a>
       <a href="#for-developers">For developers</a>
       <a href="#pricing">Pricing</a>
     </nav>
@@ -342,6 +343,135 @@ const JSON_HEADERS = {
   "cache-control": "no-store",
   "x-content-type-options": "nosniff"
 };
+
+
+const SECURITY_HEADERS_HTML = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Headers Checker – Check HTTP Security Headers Free | DeployPass</title>
+<meta name="description" content="Free security headers checker for CSP, HSTS, X-Content-Type-Options, Referrer-Policy, clickjacking protection, CORS and cookie security signals.">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="https://deploypass.com/security-headers-checker">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DeployPass">
+<meta property="og:title" content="Free Security Headers Checker | DeployPass">
+<meta property="og:description" content="Check CSP, HSTS, MIME sniffing protection, Referrer-Policy, clickjacking controls and related browser security signals.">
+<meta property="og:url" content="https://deploypass.com/security-headers-checker">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Free Security Headers Checker | DeployPass">
+<meta name="twitter:description" content="Check important HTTP security headers and get practical fixes.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563EB'/%3E%3Cpath d='M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z' fill='white'/%3E%3Cpath d='m29 32 4 4 9-10' fill='none' stroke='%2310B981' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{--blue:#2563eb;--green:#10b981;--orange:#f59e0b;--red:#dc2626;--ink:#0f172a;--muted:#64748b;--line:#dbe4ef;--soft:#f7f9fc}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:#fff;font:15px/1.58 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit}.wrap{width:min(1060px,calc(100% - 34px));margin:auto}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}.nav{height:68px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-size:19px;font-weight:850;letter-spacing:-.025em}.mark{width:27px;height:27px}.navlinks{display:flex;gap:20px;align-items:center;font-size:12px;font-weight:750;color:#475569}.navlinks a{text-decoration:none}.navlinks a:hover{color:var(--blue)}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:10px;padding:12px 15px;font:inherit;font-weight:850;cursor:pointer;text-decoration:none}.btn-dark{background:var(--ink);color:#fff}.btn-light{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.hero{background:linear-gradient(135deg,#fbfdff,#f4f8ff 60%,#f8fdff);border-bottom:1px solid var(--line);padding:66px 0 58px}.crumb{font-size:12px;color:#64748b;margin-bottom:22px}.crumb a{color:#2563eb;text-decoration:none}.kicker{display:inline-flex;border:1px solid #cfe0ff;background:#eef5ff;color:#1d4ed8;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850}.hero h1{font-size:clamp(42px,6vw,64px);line-height:1;letter-spacing:-.05em;margin:16px 0 18px}.lead{font-size:17px;color:#475569;max-width:720px;margin:0 0 24px}.form{display:flex;max-width:760px;background:#fff;border:1px solid #cdd9e8;border-radius:12px;padding:5px;box-shadow:0 12px 32px rgba(37,99,235,.07)}.form input{flex:1;min-width:0;border:0;outline:0;padding:13px 14px;background:transparent;font:inherit}.fine{margin-top:10px;color:#64748b;font-size:11px}.status{display:none;max-width:760px;margin-top:12px;padding:11px 13px;background:#eef5ff;border-radius:10px;color:#475569;font-size:12px}
+.result{display:none;padding:44px 0 64px;background:var(--soft);border-bottom:1px solid var(--line)}.summary{display:grid;grid-template-columns:210px 1fr;gap:15px;margin-bottom:16px}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px}.score{font-size:55px;font-weight:900;line-height:1;letter-spacing:-.05em}.score small{font-size:16px;color:#64748b}.badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900}.pass{background:#e8f8f0;color:#087a4c}.warning{background:#fff4d8;color:#946200}.critical{background:#feeceb;color:#b42318}.na{background:#eef2f7;color:#64748b}.result h2{margin:0 0 6px;font-size:20px}.result p{margin:0;color:#64748b;font-size:12px}.stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:15px}.stat b{font-size:18px}.stat span{display:block;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.08em}
+.headers{display:grid;gap:9px}.headerrow{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px 16px}.headtop{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.headerrow h3{margin:0;font-size:14px}.headerrow p{margin:5px 0 0;color:#64748b;font-size:12px}.fix{margin-top:10px;background:#f7f9fc;border-radius:9px;padding:9px 10px;color:#475569;font-size:11px}.fullcta{margin-top:18px;background:#0f172a;color:#fff;border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:16px}.fullcta p{color:#b9c4d4}.fullcta .btn{background:#fff;color:#0f172a}
+.section{padding:70px 0}.section.alt{background:#fbfcfe;border-top:1px solid #eef2f7;border-bottom:1px solid #eef2f7}.eyebrow{font-size:11px;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.12em}.section h2{font-size:clamp(29px,4vw,40px);line-height:1.08;letter-spacing:-.035em;margin:8px 0 13px}.intro{max-width:720px;color:#64748b;font-size:15px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:24px}.info{border:1px solid var(--line);border-radius:14px;padding:18px}.info h3{margin:0 0 7px;font-size:15px}.info p{margin:0;color:#64748b;font-size:12px}.code{margin-top:10px;background:#0f172a;color:#dbeafe;border-radius:9px;padding:10px 11px;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;overflow:auto}
+.faq{max-width:820px}.faq details{border-bottom:1px solid var(--line);padding:15px 0}.faq summary{cursor:pointer;font-weight:800}.faq p{color:#64748b;font-size:13px;margin:8px 0 0}
+footer{border-top:1px solid var(--line);padding:28px 0 38px}.foot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center;color:#64748b;font-size:11px}
+@media(max-width:760px){.navlinks{display:none}.hero{padding-top:44px}.form{flex-direction:column}.form .btn{width:100%}.summary{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.fullcta{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap nav">
+<a class="brand" href="/"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563EB"/><path d="M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z" fill="#fff"/><path d="m29 32 4 4 9-10" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Deploy<span style="color:#2563eb">Pass</span></span></a>
+<nav class="navlinks"><a href="/">Full scan</a><a href="#headers">What we check</a><a href="#faq">FAQ</a></nav>
+<a class="btn btn-dark" href="/">Run full scan →</a>
+</div></header>
+
+<main>
+<section class="hero">
+<div class="wrap">
+<div class="crumb"><a href="/">DeployPass</a> / Security Headers Checker</div>
+<span class="kicker">Free · No signup · Passive public check</span>
+<h1>Free Security Headers Checker</h1>
+<p class="lead">Check the browser-facing security headers on any public website. Review CSP, HSTS, MIME sniffing protection, Referrer-Policy, clickjacking controls, CORS and cookie security signals in seconds.</p>
+<form class="form" id="headerForm"><input id="headerUrl" type="url" placeholder="Enter a website URL (e.g. example.com)" required><button class="btn btn-dark" id="headerBtn" type="submit">Check security headers →</button></form>
+<div class="fine">DeployPass performs passive checks only. It does not attempt exploitation, credential testing, or port scanning.</div>
+<div class="status" id="headerStatus">Checking public response headers…</div>
+</div>
+</section>
+
+<section class="result" id="headerResult">
+<div class="wrap">
+<div class="summary">
+<div class="card"><div style="font-size:11px;color:#64748b;font-weight:800;margin-bottom:8px">HEADER SCORE</div><div class="score"><span id="headerScore">—</span><small>/100</small></div><span class="badge warning" id="headerVerdict">REVIEW</span></div>
+<div class="card"><h2 id="resultTitle">Security header review</h2><p id="resultTarget"></p><div class="stats"><div class="stat"><b id="hPassed">0</b><span>Passed</span></div><div class="stat"><b id="hWarnings">0</b><span>Warnings</span></div><div class="stat"><b id="hCritical">0</b><span>Critical</span></div><div class="stat"><b id="hNa">0</b><span>N/A</span></div></div></div>
+</div>
+<div class="headers" id="headerChecks"></div>
+<div class="fullcta"><div><b>Need the complete pre-deployment review?</b><p>Run all 19 DeployPass checks for frontend exposure, source maps, mixed content, framework disclosure and more.</p></div><a class="btn" href="/">Run full DeployPass scan →</a></div>
+</div>
+</section>
+
+<section class="section" id="headers"><div class="wrap">
+<div class="eyebrow">What this tool checks</div><h2>Important browser security controls, explained.</h2><p class="intro">Security headers tell browsers how to handle content, framing, transport and referrer data. A missing header is not automatically a vulnerability, but weak or absent controls can make common web attacks easier.</p>
+<div class="grid">
+<article class="info"><h3>Content-Security-Policy (CSP)</h3><p>Restricts which scripts, styles, frames and other resources a browser may load. A carefully tested CSP can reduce the impact of cross-site scripting.</p><div class="code">Content-Security-Policy: default-src 'self'</div></article>
+<article class="info"><h3>Strict-Transport-Security (HSTS)</h3><p>Tells compatible browsers to use HTTPS for future requests after a secure connection has been established.</p><div class="code">Strict-Transport-Security: max-age=31536000</div></article>
+<article class="info"><h3>X-Content-Type-Options</h3><p>The <code>nosniff</code> value tells browsers not to reinterpret declared MIME types in ways that can create security problems.</p><div class="code">X-Content-Type-Options: nosniff</div></article>
+<article class="info"><h3>Clickjacking protection</h3><p>Use CSP <code>frame-ancestors</code> or, where appropriate, X-Frame-Options to control whether another site may frame your pages.</p><div class="code">Content-Security-Policy: frame-ancestors 'none'</div></article>
+<article class="info"><h3>Referrer-Policy</h3><p>Controls how much referrer information the browser sends when users navigate away or load cross-origin resources.</p><div class="code">Referrer-Policy: strict-origin-when-cross-origin</div></article>
+<article class="info"><h3>CORS & cookie signals</h3><p>DeployPass also reviews obvious CORS behavior and Secure, HttpOnly and SameSite signals when cookies are observable on the scanned response.</p></article>
+</div>
+</div></section>
+
+<section class="section alt"><div class="wrap">
+<div class="eyebrow">How to use the result</div><h2>Fix warnings in context, not by checkbox.</h2><p class="intro">A strong header configuration depends on the application. For example, an overly strict CSP can break legitimate scripts, and HSTS should normally be enabled only after HTTPS is stable across the intended hostnames. DeployPass reports observable signals and gives practical starting points rather than claiming that one header set makes a site secure.</p>
+</div></section>
+
+<section class="section" id="faq"><div class="wrap faq">
+<div class="eyebrow">FAQ</div><h2>Security headers checker FAQ</h2>
+<details open><summary>What are HTTP security headers?</summary><p>They are HTTP response headers that instruct browsers to apply security-related behavior, such as enforcing HTTPS, limiting framing, controlling referrer information or restricting allowed content sources.</p></details>
+<details><summary>Does a perfect header score mean my website is secure?</summary><p>No. Security headers cover only part of a web application's security posture. Server-side authorization, dependency vulnerabilities, authentication, business logic and database controls require other forms of review.</p></details>
+<details><summary>Why can a cookie check show N/A?</summary><p>The scanned public response may not set a cookie. DeployPass reports N/A when a condition was not observable instead of treating it as a pass.</p></details>
+<details><summary>Does DeployPass perform a penetration test?</summary><p>No. This tool performs passive public-surface checks and does not attempt exploitation, credential attacks or port scanning.</p></details>
+<details><summary>What else does the full DeployPass scan check?</summary><p>The full scan adds checks for mixed content, source map exposure, frontend secret-like patterns, public environment-variable names, framework disclosure, verbose errors and other deployment signals.</p></details>
+</div></section>
+</main>
+<footer><div class="wrap foot"><a class="brand" href="/" style="font-size:15px">DeployPass</a><span>© 2026 DeployPass · Public-surface deployment security checks.</span><a href="/">Full 19-check scanner →</a></div></footer>
+
+<script>
+const wanted=new Set(["Content Security Policy","HSTS","MIME sniffing protection","Referrer Policy","Clickjacking protection","CORS configuration","Cookie Secure flag","Cookie HttpOnly flag","Cookie SameSite policy"]);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+document.getElementById("headerForm").addEventListener("submit",async function(e){
+ e.preventDefault();
+ const btn=document.getElementById("headerBtn"),status=document.getElementById("headerStatus");
+ btn.disabled=true;btn.textContent="Checking…";status.style.display="block";status.textContent="Checking public response headers…";
+ try{
+   const r=await fetch("/api/scan",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({url:document.getElementById("headerUrl").value})});
+   const d=await r.json(); if(!r.ok) throw new Error(d.error||"Check failed");
+   renderHeaders(d); status.textContent="Security header check complete.";
+ }catch(err){status.textContent=err.message||"Check failed. Please try again."}
+ finally{btn.disabled=false;btn.textContent="Check security headers →"}
+});
+function renderHeaders(d){
+ const checks=(d.checks||[]).filter(c=>wanted.has(c.title));
+ let points=0,max=0,passed=0,warnings=0,critical=0,na=0;
+ checks.forEach(c=>{if(c.level==="na"){na++;return}max+=1;if(c.level==="pass"){points+=1;passed++}else if(c.level==="critical"){critical++}else{warnings++}});
+ const score=max?Math.round(points/max*100):0;
+ document.getElementById("headerScore").textContent=score;
+ const verdict=document.getElementById("headerVerdict");
+ verdict.textContent=critical?"ACTION NEEDED":warnings?"REVIEW":"PASS";
+ verdict.className="badge "+(critical?"critical":warnings?"warning":"pass");
+ document.getElementById("resultTarget").textContent="Checked "+d.target+" · "+checks.length+" browser-facing security signals.";
+ document.getElementById("hPassed").textContent=passed;document.getElementById("hWarnings").textContent=warnings;document.getElementById("hCritical").textContent=critical;document.getElementById("hNa").textContent=na;
+ document.getElementById("headerChecks").innerHTML=checks.map(c=>{
+   const cls=c.level==="pass"?"pass":c.level==="critical"?"critical":c.level==="na"?"na":"warning";
+   const label=c.level==="na"?"N/A":c.level.toUpperCase();
+   const fix=c.fix&&c.level!=="pass"&&c.level!=="na"?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':"";
+   return '<article class="headerrow"><div class="headtop"><div><h3>'+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+cls+'">'+label+'</span></div>'+fix+'</article>';
+ }).join("");
+ document.getElementById("headerResult").style.display="block";
+ document.getElementById("headerResult").scrollIntoView({behavior:"smooth",block:"start"});
+}
+</script>
+</body></html>`;
 
 function json(data, status=200) {
   return new Response(JSON.stringify(data), {status, headers: JSON_HEADERS});
@@ -790,7 +920,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
-      return json({ok:true, service:"deploypass", version:"scanner-v4.0"});
+      return json({ok:true, service:"deploypass", version:"scanner-v4.2"});
     }
 
     if (url.pathname === "/robots.txt") {
@@ -811,12 +941,28 @@ export default {
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://deploypass.com/security-headers-checker</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>`;
       return new Response(sitemap, {
         headers: {
           "content-type":"application/xml; charset=utf-8",
           "cache-control":"public, max-age=3600",
           "x-content-type-options":"nosniff"
+        }
+      });
+    }
+
+    if (url.pathname === "/security-headers-checker" || url.pathname === "/security-headers-checker/") {
+      return new Response(SECURITY_HEADERS_HTML, {
+        headers: {
+          "content-type":"text/html; charset=utf-8",
+          "cache-control":"public, max-age=300",
+          "x-content-type-options":"nosniff",
+          "referrer-policy":"strict-origin-when-cross-origin"
         }
       });
     }

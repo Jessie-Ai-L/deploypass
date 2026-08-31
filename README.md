@@ -67,3 +67,12 @@ Successful scans are saved best-effort to the `scans` table through the `DB` D1 
 - Rebuilds scan results with compact score summary, filters, issue cards, share controls, and reduced template-like styling.
 - Rebuilds shared report pages with branded navigation, score summary, filters, CTA, and mobile responsive layout.
 - Scanner logic, D1 history, report persistence, and security boundaries remain unchanged.
+
+## v4.2 Security Headers SEO Tool
+
+- Adds `/security-headers-checker` as the first focused SEO/tool landing page.
+- Reuses the existing `/api/scan` backend rather than duplicating scanner logic.
+- Presents a focused result for CSP, HSTS, MIME sniffing, Referrer-Policy, clickjacking, CORS and observable cookie signals.
+- Adds unique title, meta description, canonical, OG/Twitter metadata, educational content and FAQ.
+- Adds an internal homepage link and includes the new URL in `sitemap.xml`.
+- Keeps the existing 19-check scanner, D1 persistence and shareable report system intact.
