@@ -31,3 +31,10 @@ A PASS means "no obvious issue was detected by these checks", not "the applicati
 - Cookie checks use N/A when no Set-Cookie header is observable.
 - N/A findings do not affect the score.
 - Scope/version wording updated to V2.1.
+
+## V2.3 changes
+
+- Large responses are sampled instead of failing the entire scan.
+- Adds a Scan coverage result.
+- Sampling-sensitive negative checks can return N/A instead of a false PASS.
+- Keeps bounded response and asset sampling for resource-safety.

@@ -58,7 +58,7 @@ const HTML = `<!doctype html>
     </div>
     <div id="topFixesWrap" style="display:none"><h2 class="sectiontitle">Top things to fix before deployment</h2><div class="card" style="padding:14px"><div class="checks" id="topFixes" style="margin-top:0"></div></div></div><h2 class="sectiontitle">Checks</h2>
     <div class="checks" id="checks"></div>
-    <div class="scope"><b>Important:</b> DeployPass V2.2.1 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
+    <div class="scope"><b>Important:</b> DeployPass V2.3 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
   </div></section>
 </main>
 <footer><div class="wrap">© 2026 DeployPass · Security checks for AI-built apps before deployment.</div></footer>
@@ -182,10 +182,13 @@ async function safeFetch(url, opts={}) {
 
 async function limitedText(res, maxBytes=450000) {
   const len = Number(res.headers.get("content-length") || 0);
-  if (len && len > maxBytes) throw new Error("Response too large for the V1 scanner.");
   const text = await res.text();
-  if (text.length > maxBytes) return text.slice(0, maxBytes);
-  return text;
+  const truncated = (len && len > maxBytes) || text.length > maxBytes;
+  return {
+    text: text.length > maxBytes ? text.slice(0, maxBytes) : text,
+    truncated,
+    originalBytes: len || text.length
+  };
 }
 
 function sameOrigin(base, candidate) {
@@ -282,7 +285,9 @@ async function scan(target) {
   if (!res.ok) throw new Error(`Target returned HTTP ${res.status}.`);
   const ctype = (res.headers.get("content-type") || "").toLowerCase();
   if (!ctype.includes("text/html")) throw new Error("The target did not return an HTML page.");
-  const html = await limitedText(res);
+  const htmlSample = await limitedText(res);
+  const html = htmlSample.text;
+  let partialScan = htmlSample.truncated;
   const checks = [];
 
   add(checks,
@@ -348,7 +353,9 @@ async function scan(target) {
       if (!sr.res.ok) continue;
       const ct = (sr.res.headers.get("content-type") || "").toLowerCase();
       if (ct && !ct.includes("javascript") && !ct.includes("text/plain") && !ct.includes("application/octet-stream")) continue;
-      const js = await limitedText(sr.res, 300000);
+      const jsSample = await limitedText(sr.res, 300000);
+      const js = jsSample.text;
+      if (jsSample.truncated) partialScan = true;
       combined += "\n" + js;
       mapHints.push(...sourceMapHints(js));
       fetchedScripts++;
@@ -378,7 +385,9 @@ async function scan(target) {
       if (!sameOrigin(finalUrl, candidate)) continue;
       const mr = await safeFetch(candidate.toString(), {accept:"application/json,text/plain,*/*;q=0.5"});
       if (mr.res.ok) {
-        const t = await limitedText(mr.res, 120000);
+        const mapSample = await limitedText(mr.res, 120000);
+        const t = mapSample.text;
+        if (mapSample.truncated) partialScan = true;
         if (/"sources"\s*:/.test(t) || /"version"\s*:\s*3/.test(t)) { publicMap = candidate.toString(); break; }
       }
     } catch {}
@@ -389,6 +398,11 @@ async function scan(target) {
   );
 
   const server = h.get("server");
+  add(checks, partialScan ? "na" : "pass", "Scan coverage",
+    partialScan ? "Large response detected. DeployPass analyzed a limited sample of the page and/or frontend assets." : "The sampled response stayed within the V2.3 analysis limits.",
+    ""
+  );
+
   add(checks, "pass", "Public response review",
     server ? `Public headers were reviewed. Server header: ${server}.` : "Public response headers were reviewed.",
     ""
