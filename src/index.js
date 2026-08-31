@@ -23,7 +23,7 @@ const HTML = `<!doctype html>
     .score{font-size:64px;font-weight:900;letter-spacing:-.06em;line-height:1}.score small{font-size:20px;color:#718096}.verdict{display:inline-block;margin-top:13px;font-size:13px;font-weight:900;letter-spacing:.08em;padding:7px 10px;border-radius:999px}
     .pass{background:#e9f8f0;color:var(--good)}.review{background:#fff6db;color:var(--warn)}.fail{background:#fff0ee;color:var(--bad)}.na{background:#eef2f7;color:#65748a}
     .summary h2{font-size:28px;margin:0 0 8px}.summary p{margin:0;color:var(--muted)}.stats{display:flex;gap:18px;margin-top:17px;flex-wrap:wrap}.stat b{font-size:20px}.stat span{display:block;font-size:12px;color:#748196;text-transform:uppercase;letter-spacing:.08em}
-    .checks{display:grid;gap:12px;margin-top:18px}.check{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}.checktop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.check h3{margin:0;font-size:17px}.badge{font-size:12px;font-weight:900;padding:5px 8px;border-radius:999px;white-space:nowrap}.check p{margin:7px 0 0;color:var(--muted);font-size:14px}.fix{margin-top:10px;padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px;color:#405065}
+    .checks{display:grid;gap:12px;margin-top:18px}.check{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}.checktop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.check h3{margin:0;font-size:17px}.badge{font-size:12px;font-weight:900;padding:5px 8px;border-radius:999px;white-space:nowrap}.check p{margin:7px 0 0;color:var(--muted);font-size:14px}.fix{margin-top:10px;padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px;color:#405065}.actiongrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.action{padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px;color:#405065}.action b{display:block;color:var(--text);margin-bottom:3px}.ready{margin:26px 0 10px;padding:16px 18px;border:1px solid #cfe8da;background:#f2fbf6;border-radius:16px;color:#315d47}.priority{font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
     .sectiontitle{font-size:23px;margin:26px 0 10px}.scope{margin:30px 0 70px;background:#eef4fb;border-radius:18px;padding:18px 20px;color:#405065}.scope b{color:var(--text)}
     footer{border-top:1px solid var(--line);padding:24px 0 36px;color:#748196;font-size:13px}
     @media(max-width:700px){.formrow{flex-direction:column}.summary{grid-template-columns:1fr}.hero{padding-top:34px}}
@@ -56,9 +56,9 @@ const HTML = `<!doctype html>
         <div class="stat"><b id="passedCount">0</b><span>Passed</span></div><div class="stat"><b id="naCount">0</b><span>N/A</span></div>
       </div></div>
     </div>
-    <div id="topFixesWrap" style="display:none"><h2 class="sectiontitle">Top things to fix before deployment</h2><div class="card" style="padding:14px"><div class="checks" id="topFixes" style="margin-top:0"></div></div></div><h2 class="sectiontitle">Checks</h2>
+    <div id="readyMessage" class="ready" style="display:none"></div><div id="topFixesWrap" style="display:none"><h2 class="sectiontitle">Fix these things first</h2><div class="card" style="padding:14px"><div class="checks" id="topFixes" style="margin-top:0"></div></div></div><h2 class="sectiontitle">Checks</h2>
     <div class="checks" id="checks"></div>
-    <div class="scope"><b>Important:</b> DeployPass V2.1 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
+    <div class="scope"><b>Important:</b> DeployPass V2.2 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
   </div></section>
 </main>
 <footer><div class="wrap">© 2026 DeployPass · Security checks for AI-built apps before deployment.</div></footer>
@@ -76,6 +76,7 @@ form.addEventListener('submit',async e=>{
   }catch(err){statusText.textContent=err.message||'Scan failed. Please try again.'}
   finally{btn.disabled=false;btn.textContent='Run free scan'}
 });
+function actionHtml(c){var why=c.why||'This can weaken the public security posture of the deployed app.';return '<div class="actiongrid"><div class="action"><b>Why it matters</b>'+esc(why)+'</div><div class="action"><b>How to fix</b>'+esc(c.fix||'Review this setting before production deployment.')+'</div></div>';}
 function render(d){
   results.style.display='block';
   document.getElementById('score').textContent=d.score;
@@ -86,12 +87,13 @@ function render(d){
   document.getElementById('warningCount').textContent=d.counts.warning;
   document.getElementById('passedCount').textContent=d.counts.pass;
   document.getElementById('naCount').textContent=d.counts.na||0;
+  var ready=document.getElementById('readyMessage'); ready.style.display=d.counts.critical===0&&d.counts.warning===0?'block':'none'; ready.innerHTML='<b>Your app looks ready for this passive pre-deploy check.</b> '+d.counts.pass+' checks passed. This is not a guarantee of security.';
   var tf=document.getElementById('topFixesWrap'), tfl=document.getElementById('topFixes');
   var fixes=(d.topFixes&&d.topFixes.length)?d.topFixes:(d.checks||[]).filter(function(c){return c.level==='critical'||c.level==='warning';}).slice(0,3);
   if(fixes.length){
     tf.style.display='block';
     tfl.innerHTML=fixes.map(function(c,i){
-      return '<article class="check"><div class="checktop"><div><h3>'+ (i+1)+'. '+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+(c.level==='critical'?'fail':'review')+'">'+(c.level==='critical'?'FIX NOW':'FIX NEXT')+'</span></div>'+(c.fix?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':'')+'</article>';
+      return '<article class="check"><div class="checktop"><div><h3>'+ (i+1)+'. '+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+(c.level==='critical'?'fail':'review')+'">'+(c.level==='critical'?'FIX NOW':'FIX NEXT')+'</span></div>'+'<div class="priority">'+(c.level==='critical'?'High priority':'Review before launch')+'</div>'+actionHtml(c)+'</article>';
     }).join('');
   } else {
     tf.style.display='none'; tfl.innerHTML='';
@@ -99,7 +101,7 @@ function render(d){
   document.getElementById('checks').innerHTML=d.checks.map(function(c){
     var badgeClass=c.level==='pass'?'pass':c.level==='critical'?'fail':c.level==='na'?'na':'review';
     var label=c.level==='na'?'N/A':c.level.toUpperCase();
-    var fixHtml=c.fix?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':'';
+    var fixHtml=(c.level==='warning'||c.level==='critical')?actionHtml(c):(c.fix?'<div class="fix"><b>Suggested fix:</b> '+esc(c.fix)+'</div>':'');
     return '<article class="check"><div class="checktop"><div><h3>'+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+badgeClass+'">'+esc(label)+'</span></div>'+fixHtml+'</article>';
   }).join('');
   results.scrollIntoView({behavior:'smooth',block:'start'});
@@ -259,10 +261,33 @@ function versionDisclosure(headers) {
   return vals;
 }
 
-function add(checks, level, title, detail, fix="") { checks.push({level,title,detail,fix}); }
+const WHY = {
+  "HTTPS":"Without HTTPS, traffic can be intercepted or modified in transit.",
+  "Content Security Policy":"CSP reduces the impact of injected scripts and other browser-side attacks.",
+  "HSTS":"HSTS tells browsers to keep using HTTPS and helps prevent downgrade mistakes.",
+  "MIME sniffing protection":"Browsers guessing content types can create avoidable script-execution risks.",
+  "Referrer Policy":"A referrer policy limits how much URL information is leaked to other sites.",
+  "Clickjacking protection":"Frame restrictions help stop another site from disguising your UI inside a malicious frame.",
+  "CORS configuration":"Overly broad CORS can let untrusted websites read responses intended for your app.",
+  "Cookie Secure flag":"Sensitive cookies should not be sent over unencrypted connections.",
+  "Cookie HttpOnly flag":"HttpOnly reduces exposure of sensitive cookies to injected JavaScript.",
+  "Cookie SameSite policy":"SameSite helps reduce cross-site request abuse involving cookies.",
+  "Mixed content":"HTTP resources on an HTTPS page weaken transport security and may be blocked by browsers.",
+  "Framework version disclosure":"Unnecessary technology details can make targeted reconnaissance easier.",
+  "Frontend secret patterns":"Secrets shipped to the browser should be treated as public and can lead to account or service abuse.",
+  "Development / debug indicators":"Development features can expose diagnostics or behavior that should not be public in production.",
+  "Verbose error leakage":"Detailed errors can reveal internal paths, code structure, or implementation details.",
+  "Public environment variables":"Client-visible environment values must never contain privileged credentials or private secrets.",
+  "Source map exposure":"Public source maps can reveal original source structure and make reconnaissance easier."
+};
+function add(checks, level, title, detail, fix="") { checks.push({level,title,detail,fix,why:WHY[title]||"Review this finding in the context of your application before deployment."}); }
 
 async function scan(target) {
   const started = Date.now();
+  const host = target.hostname.toLowerCase().replace(/\.$/, "");
+  if (host === "deploypass.com" || host === "www.deploypass.com" || host.endsWith(".2377115234.workers.dev")) {
+    throw new Error("DeployPass can't scan its own production endpoint. Try another public website.");
+  }
   const {res, finalUrl} = await safeFetch(target.toString());
   if (!res.ok) throw new Error(`Target returned HTTP ${res.status}.`);
   const ctype = (res.headers.get("content-type") || "").toLowerCase();
@@ -392,7 +417,7 @@ async function scan(target) {
   const verdict=counts.critical?"FAIL":score<90?"REVIEW":"PASS";
   const topFixes=checks.filter(c=>c.level==="critical"||c.level==="warning").sort((a,b)=>(b.level==="critical"?100:weights[b.title]||5)-(a.level==="critical"?100:weights[a.title]||5)).slice(0,3);
 
-  return {ok:true,target:finalUrl.origin,finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v2.1"}};
+  return {ok:true,target:finalUrl.origin,finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v2.2"}};
 }
 
 export default {
@@ -400,7 +425,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
-      return json({ok:true, service:"deploypass", version:"scanner-v2.1"});
+      return json({ok:true, service:"deploypass", version:"scanner-v2.2"});
     }
 
     if (url.pathname === "/api/scan") {
