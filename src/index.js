@@ -424,8 +424,24 @@ async function scan(target) {
   return {ok:true,target:finalUrl.origin,finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v2.1"}};
 }
 
+async function saveScan(env, result) {
+  if (!env?.DB) return;
+  await env.DB.prepare(`
+    INSERT INTO scans (url, score, critical_count, warning_count, passed_count, na_count, checks_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    result.target,
+    result.score,
+    result.counts.critical,
+    result.counts.warning,
+    result.counts.pass,
+    result.counts.na || 0,
+    JSON.stringify(result.checks || [])
+  ).run();
+}
+
 export default {
-  async fetch(request) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
@@ -440,6 +456,10 @@ export default {
         const body = await request.json();
         const target = normalizeTarget(body.url);
         const result = await scan(target);
+        // Saving scan history is best-effort: a D1 write problem must never break the scanner.
+        const persist = saveScan(env, result).catch(err => console.error("D1 scan history write failed", err));
+        if (ctx?.waitUntil) ctx.waitUntil(persist);
+        else await persist;
         return json(result);
       } catch (e) {
         return json({error: e?.message || "Scan failed."}, 400);

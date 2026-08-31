@@ -44,3 +44,8 @@ A PASS means "no obvious issue was detected by these checks", not "the applicati
 - Cleans up stale older version labels in the UI and health metadata.
 - Keeps the V2.3 scanner logic and 19 passive checks unchanged.
 - No Cloudflare configuration changes are required.
+
+
+## D1 scan history
+
+Successful scans are saved best-effort to the `scans` table through the `DB` D1 binding. A database write failure does not fail the user scan.

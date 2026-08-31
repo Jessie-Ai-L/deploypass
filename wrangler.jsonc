@@ -4,5 +4,12 @@
   "main": "src/index.js",
   "compatibility_date": "2026-08-01",
   "workers_dev": true,
-  "preview_urls": true
+  "preview_urls": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "deploypass-db",
+      "database_id": "49e318f7-6af7-40a9-91aa-4d85792f2f9a"
+    }
+  ]
 }
