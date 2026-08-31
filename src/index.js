@@ -24,7 +24,7 @@ const HTML = `<!doctype html>
     .pass{background:#e9f8f0;color:var(--good)}.review{background:#fff6db;color:var(--warn)}.fail{background:#fff0ee;color:var(--bad)}.na{background:#eef2f7;color:#65748a}
     .summary h2{font-size:28px;margin:0 0 8px}.summary p{margin:0;color:var(--muted)}.stats{display:flex;gap:18px;margin-top:17px;flex-wrap:wrap}.stat b{font-size:20px}.stat span{display:block;font-size:12px;color:#748196;text-transform:uppercase;letter-spacing:.08em}
     .checks{display:grid;gap:12px;margin-top:18px}.check{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}.checktop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.check h3{margin:0;font-size:17px}.badge{font-size:12px;font-weight:900;padding:5px 8px;border-radius:999px;white-space:nowrap}.check p{margin:7px 0 0;color:var(--muted);font-size:14px}.fix{margin-top:10px;padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px;color:#405065}.guidance{display:grid;gap:8px;margin-top:10px}.guide{padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px;color:#405065}.guide b{color:var(--text)}
-    .sectiontitle{font-size:23px;margin:26px 0 10px}.scope{margin:30px 0 70px;background:#eef4fb;border-radius:18px;padding:18px 20px;color:#405065}.scope b{color:var(--text)}
+    .sharebar{display:none;margin:18px 0 0;align-items:center;gap:10px;flex-wrap:wrap}.sharelink{flex:1;min-width:260px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#405065;font-size:14px}.sharebtn{padding:12px 16px}.sectiontitle{font-size:23px;margin:26px 0 10px}.scope{margin:30px 0 70px;background:#eef4fb;border-radius:18px;padding:18px 20px;color:#405065}.scope b{color:var(--text)}
     footer{border-top:1px solid var(--line);padding:24px 0 36px;color:#748196;font-size:13px}
     @media(max-width:700px){.formrow{flex-direction:column}.summary{grid-template-columns:1fr}.hero{padding-top:34px}}
   </style>
@@ -56,14 +56,19 @@ const HTML = `<!doctype html>
         <div class="stat"><b id="passedCount">0</b><span>Passed</span></div><div class="stat"><b id="naCount">0</b><span>N/A</span></div>
       </div></div>
     </div>
+    <div class="sharebar" id="shareBar">
+      <input class="sharelink" id="shareLink" readonly aria-label="Shareable report URL">
+      <button class="sharebtn" id="copyShareBtn" type="button">Copy report link</button>
+    </div>
     <div id="topFixesWrap" style="display:none"><h2 class="sectiontitle">Top things to fix before deployment</h2><div class="card" style="padding:14px"><div class="checks" id="topFixes" style="margin-top:0"></div></div></div><h2 class="sectiontitle">Checks</h2>
     <div class="checks" id="checks"></div>
-    <div class="scope"><b>Important:</b> DeployPass V2.3.1 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
+    <div class="scope"><b>Important:</b> DeployPass v3.3 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
   </div></section>
 </main>
 <footer><div class="wrap">© 2026 DeployPass · Security checks for AI-built apps before deployment.</div></footer>
 <script>
 const form=document.getElementById('scanForm'), btn=document.getElementById('scanBtn'), status=document.getElementById('status'), statusText=document.getElementById('statusText'), results=document.getElementById('results');
+const shareBar=document.getElementById('shareBar'), shareLink=document.getElementById('shareLink'), copyShareBtn=document.getElementById('copyShareBtn');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const GUIDANCE={
   'Cookie HttpOnly flag':{why:'Cookies readable by JavaScript can be exposed if the page is affected by cross-site scripting.',how:'Set HttpOnly on authentication and session cookies that do not need JavaScript access.'},
@@ -91,6 +96,13 @@ form.addEventListener('submit',async e=>{
 });
 function render(d){
   results.style.display='block';
+  if(d.reportUrl){
+    shareBar.style.display='flex';
+    shareLink.value=d.reportUrl;
+  }else{
+    shareBar.style.display='none';
+    shareLink.value='';
+  }
   document.getElementById('score').textContent=d.score;
   const v=document.getElementById('verdict'); v.textContent=d.verdict; v.className='verdict '+(d.verdict==='PASS'?'pass':d.verdict==='FAIL'?'fail':'review');
   document.getElementById('summaryTitle').textContent=d.verdict==='PASS'?'No obvious public issue detected':d.verdict==='FAIL'?'Fix critical issues before deployment':'Review these items before deployment';
@@ -117,6 +129,17 @@ function render(d){
   }).join('');
   results.scrollIntoView({behavior:'smooth',block:'start'});
 }
+copyShareBtn.addEventListener('click',async function(){
+  if(!shareLink.value) return;
+  try{
+    await navigator.clipboard.writeText(shareLink.value);
+    copyShareBtn.textContent='Copied';
+    setTimeout(function(){copyShareBtn.textContent='Copy report link';},1400);
+  }catch(e){
+    shareLink.select();
+    document.execCommand('copy');
+  }
+});
 </script>
 </body></html>`;
 
@@ -421,11 +444,34 @@ async function scan(target) {
   const verdict=counts.critical?"FAIL":score<90?"REVIEW":"PASS";
   const topFixes=checks.filter(c=>c.level==="critical"||c.level==="warning").sort((a,b)=>(b.level==="critical"?100:weights[b.title]||5)-(a.level==="critical"?100:weights[a.title]||5)).slice(0,3);
 
-  return {ok:true,target:finalUrl.origin,finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v2.1"}};
+  return {ok:true,target:finalUrl.origin,finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v3.3"}};
+}
+
+function newReportToken() {
+  return crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+}
+
+async function ensureReportsTable(env) {
+  if (!env?.DB) return;
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS reports (
+      token TEXT PRIMARY KEY,
+      url TEXT NOT NULL,
+      score INTEGER NOT NULL,
+      verdict TEXT NOT NULL,
+      result_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+  await env.DB.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_reports_created_at
+    ON reports(created_at)
+  `).run();
 }
 
 async function saveScan(env, result) {
-  if (!env?.DB) return;
+  if (!env?.DB) return null;
+
   await env.DB.prepare(`
     INSERT INTO scans (url, score, critical_count, warning_count, passed_count, na_count, checks_json)
     VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -438,6 +484,81 @@ async function saveScan(env, result) {
     result.counts.na || 0,
     JSON.stringify(result.checks || [])
   ).run();
+
+  await ensureReportsTable(env);
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const token = newReportToken();
+    try {
+      await env.DB.prepare(`
+        INSERT INTO reports (token, url, score, verdict, result_json)
+        VALUES (?, ?, ?, ?, ?)
+      `).bind(
+        token,
+        result.target,
+        result.score,
+        result.verdict,
+        JSON.stringify(result)
+      ).run();
+      return token;
+    } catch (err) {
+      if (attempt === 2) throw err;
+    }
+  }
+  return null;
+}
+
+function reportHtml(report) {
+  const data = report.result;
+  const escHtml = (value) => String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
+  const statusClass = data.verdict === "PASS" ? "pass" : data.verdict === "FAIL" ? "fail" : "review";
+  const checkRows = (data.checks || []).map(c => {
+    const cls = c.level === "pass" ? "pass" : c.level === "critical" ? "fail" : c.level === "na" ? "na" : "review";
+    const label = c.level === "na" ? "N/A" : String(c.level || "").toUpperCase();
+    return `<article class="check"><div class="row"><div><h3>${escHtml(c.title)}</h3><p>${escHtml(c.detail)}</p></div><span class="badge ${cls}">${escHtml(label)}</span></div></article>`;
+  }).join("");
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>DeployPass Report · ${escHtml(data.target)}</title>
+<style>
+:root{--bg:#f7f9fc;--card:#fff;--text:#0f172a;--muted:#526070;--line:#dbe3ef;--good:#147d4f;--warn:#9a6700;--bad:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{width:min(960px,calc(100% - 36px));margin:auto}header{padding:24px 0}.brand{font-size:22px;font-weight:800;text-decoration:none;color:inherit}
+.hero{padding:34px 0 20px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#64748b}.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.02;letter-spacing:-.045em;margin:10px 0}.hero p{color:var(--muted);margin:0}
+.summary{display:grid;grid-template-columns:200px 1fr;gap:16px;margin:18px 0}.card,.check{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
+.score{font-size:62px;font-weight:900;line-height:1}.score small{font-size:19px;color:#718096}.verdict,.badge{display:inline-block;font-size:12px;font-weight:900;padding:6px 9px;border-radius:999px}.verdict{margin-top:12px}
+.pass{background:#e9f8f0;color:var(--good)}.review{background:#fff6db;color:var(--warn)}.fail{background:#fff0ee;color:var(--bad)}.na{background:#eef2f7;color:#65748a}
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px}.stat b{font-size:21px}.stat span{display:block;color:#748196;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.checks{display:grid;gap:11px;margin:14px 0 34px}.row{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.check h3{margin:0;font-size:17px}.check p{margin:7px 0 0;color:var(--muted);font-size:14px}
+.notice{padding:16px 18px;background:#eef4fb;border-radius:16px;color:#405065;margin:24px 0 54px}.meta{font-size:13px;color:#748196}
+@media(max-width:680px){.summary{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">DeployPass</a></div></header>
+<main class="wrap">
+<section class="hero"><div class="eyebrow">Shared security report</div><h1>${escHtml(data.target)}</h1><p>Scan saved ${escHtml(report.created_at)} UTC · Report ${escHtml(report.token)}</p></section>
+<section class="summary">
+<div class="card"><div class="score">${Number(data.score)||0}<small>/100</small></div><span class="verdict ${statusClass}">${escHtml(data.verdict)}</span></div>
+<div class="card"><h2 style="margin:0">Deployment review</h2><div class="stats">
+<div class="stat"><b>${Number(data.counts?.critical)||0}</b><span>Critical</span></div>
+<div class="stat"><b>${Number(data.counts?.warning)||0}</b><span>Warnings</span></div>
+<div class="stat"><b>${Number(data.counts?.pass)||0}</b><span>Passed</span></div>
+<div class="stat"><b>${Number(data.counts?.na)||0}</b><span>N/A</span></div>
+</div></div>
+</section>
+<h2>Checks</h2>
+<section class="checks">${checkRows}</section>
+<div class="notice"><b>Important:</b> This is a saved DeployPass passive public-surface scan. It does not prove an application is secure, and the report may become outdated as the target changes.</div>
+</main>
+</body></html>`;
 }
 
 export default {
@@ -445,7 +566,48 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
-      return json({ok:true, service:"deploypass", version:"scanner-v2.1"});
+      return json({ok:true, service:"deploypass", version:"scanner-v3.3"});
+    }
+
+    const reportMatch = url.pathname.match(/^\/report\/([a-f0-9]{16})$/i);
+    if (reportMatch) {
+      if (!env?.DB) return new Response("Report storage is unavailable.", {status:503});
+      try {
+        const row = await env.DB.prepare(`
+          SELECT token, url, score, verdict, result_json, created_at
+          FROM reports
+          WHERE token = ?
+          LIMIT 1
+        `).bind(reportMatch[1].toLowerCase()).first();
+
+        if (!row) {
+          return new Response("Report not found", {status:404, headers:{"content-type":"text/plain; charset=utf-8"}});
+        }
+
+        let result;
+        try { result = JSON.parse(row.result_json); }
+        catch { return new Response("Stored report is invalid", {status:500}); }
+
+        return new Response(reportHtml({
+          token: row.token,
+          url: row.url,
+          score: row.score,
+          verdict: row.verdict,
+          created_at: row.created_at,
+          result
+        }), {
+          headers: {
+            "content-type":"text/html; charset=utf-8",
+            "cache-control":"public, max-age=300",
+            "x-content-type-options":"nosniff",
+            "referrer-policy":"no-referrer",
+            "x-robots-tag":"noindex, nofollow"
+          }
+        });
+      } catch (err) {
+        console.error("Report read failed", err);
+        return new Response("Report storage is not ready yet.", {status:503, headers:{"content-type":"text/plain; charset=utf-8"}});
+      }
     }
 
     if (url.pathname === "/api/scan") {
@@ -456,10 +618,16 @@ export default {
         const body = await request.json();
         const target = normalizeTarget(body.url);
         const result = await scan(target);
-        // Saving scan history is best-effort: a D1 write problem must never break the scanner.
-        const persist = saveScan(env, result).catch(err => console.error("D1 scan history write failed", err));
-        if (ctx?.waitUntil) ctx.waitUntil(persist);
-        else await persist;
+        // Persistence is best-effort: a D1 problem must never break the scanner.
+        try {
+          const token = await saveScan(env, result);
+          if (token) {
+            result.reportToken = token;
+            result.reportUrl = `${url.origin}/report/${token}`;
+          }
+        } catch (err) {
+          console.error("D1 scan/report write failed", err);
+        }
         return json(result);
       } catch (e) {
         return json({error: e?.message || "Scan failed."}, 400);

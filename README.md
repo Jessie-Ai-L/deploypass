@@ -49,3 +49,12 @@ A PASS means "no obvious issue was detected by these checks", not "the applicati
 ## D1 scan history
 
 Successful scans are saved best-effort to the `scans` table through the `DB` D1 binding. A database write failure does not fail the user scan.
+
+## v3.3 shareable reports
+
+- Each successful scan is still saved to the `scans` table.
+- The Worker automatically creates a `reports` table on first use.
+- Successful persistence returns a random 16-character report token.
+- The scanner UI exposes a copyable URL like `/report/abc123...`.
+- Shared report pages are `noindex,nofollow` and use non-sequential random tokens.
+- A D1 write failure never blocks the scan result itself.
