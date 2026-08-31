@@ -38,3 +38,9 @@ A PASS means "no obvious issue was detected by these checks", not "the applicati
 - Adds a Scan coverage result.
 - Sampling-sensitive negative checks can return N/A instead of a false PASS.
 - Keeps bounded response and asset sampling for resource-safety.
+
+## V2.3.1 changes
+
+- Cleans up stale older version labels in the UI and health metadata.
+- Keeps the V2.3 scanner logic and 19 passive checks unchanged.
+- No Cloudflare configuration changes are required.

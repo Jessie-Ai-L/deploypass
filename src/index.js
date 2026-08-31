@@ -58,7 +58,7 @@ const HTML = `<!doctype html>
     </div>
     <div id="topFixesWrap" style="display:none"><h2 class="sectiontitle">Top things to fix before deployment</h2><div class="card" style="padding:14px"><div class="checks" id="topFixes" style="margin-top:0"></div></div></div><h2 class="sectiontitle">Checks</h2>
     <div class="checks" id="checks"></div>
-    <div class="scope"><b>Important:</b> DeployPass V2.3 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
+    <div class="scope"><b>Important:</b> DeployPass V2.3.1 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
   </div></section>
 </main>
 <footer><div class="wrap">© 2026 DeployPass · Security checks for AI-built apps before deployment.</div></footer>
