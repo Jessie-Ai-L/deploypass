@@ -923,6 +923,50 @@ export default {
       return json({ok:true, service:"deploypass", version:"scanner-v4.2"});
     }
 
+const HSTS_HTML = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HSTS Checker – Test Strict-Transport-Security Header Free | DeployPass</title>
+<meta name="description" content="Free HSTS checker. Test a website's Strict-Transport-Security header and inspect max-age, includeSubDomains and preload configuration with practical fixes.">
+<meta name="robots" content="index,follow"><link rel="canonical" href="https://deploypass.com/hsts-checker">
+<meta property="og:title" content="Free HSTS Checker | DeployPass"><meta property="og:description" content="Check Strict-Transport-Security, max-age, includeSubDomains and preload settings."><meta property="og:url" content="https://deploypass.com/hsts-checker"><meta property="og:type" content="website">
+<style>
+:root{--blue:#2563eb;--green:#10b981;--orange:#f59e0b;--red:#dc2626;--ink:#0f172a;--muted:#64748b;--line:#dbe4ef;--soft:#f7f9fc}*{box-sizing:border-box}body{margin:0;color:var(--ink);font:15px/1.58 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}.wrap{width:min(1060px,calc(100% - 34px));margin:auto}a{color:inherit}.top{border-bottom:1px solid var(--line);background:#fff}.nav{height:68px;display:flex;align-items:center;justify-content:space-between}.brand{text-decoration:none;font-size:19px;font-weight:900}.brand b{color:var(--blue)}.links{display:flex;gap:20px;font-size:12px;font-weight:750}.links a{text-decoration:none}.btn{border:0;border-radius:10px;padding:12px 15px;font:inherit;font-weight:850;cursor:pointer;text-decoration:none;background:var(--ink);color:#fff}.hero{padding:64px 0 56px;background:linear-gradient(135deg,#fbfdff,#f3f8ff);border-bottom:1px solid var(--line)}.crumb{font-size:12px;color:var(--muted);margin-bottom:20px}.crumb a{color:var(--blue);text-decoration:none}.pill{display:inline-block;border:1px solid #cfe0ff;background:#eef5ff;color:#1d4ed8;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850}.hero h1{font-size:clamp(42px,6vw,64px);line-height:1;letter-spacing:-.05em;margin:16px 0}.lead{font-size:17px;color:#475569;max-width:740px}.form{display:flex;max-width:760px;background:#fff;border:1px solid #cdd9e8;border-radius:12px;padding:5px;margin-top:24px;box-shadow:0 12px 32px rgba(37,99,235,.07)}.form input{flex:1;border:0;outline:0;padding:13px;font:inherit}.fine,.status{font-size:11px;color:var(--muted);margin-top:10px}.status{display:none;background:#eef5ff;max-width:760px;padding:10px;border-radius:9px}.result{display:none;background:var(--soft);padding:44px 0 62px;border-bottom:1px solid var(--line)}.summary{display:grid;grid-template-columns:220px 1fr;gap:15px}.card,.metric{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px}.score{font-size:52px;font-weight:900;letter-spacing:-.05em;line-height:1}.score small{font-size:16px;color:var(--muted)}.badge{display:inline-block;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;margin-top:10px}.pass{background:#e8f8f0;color:#087a4c}.warning{background:#fff4d8;color:#946200}.critical{background:#feeceb;color:#b42318}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:15px}.metric b{display:block;font-size:18px}.metric span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.raw{margin-top:14px;background:#0f172a;color:#dbeafe;border-radius:12px;padding:14px;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;overflow:auto}.advice{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}.advice h3{margin:0 0 6px}.advice p{margin:0;color:var(--muted)}.section{padding:70px 0}.alt{background:#fbfcfe;border-block:1px solid #eef2f7}.eyebrow{font-size:11px;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:.12em}.section h2{font-size:clamp(29px,4vw,40px);line-height:1.08;letter-spacing:-.035em;margin:8px 0 13px}.intro{max-width:760px;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:24px}.info{border:1px solid var(--line);border-radius:14px;padding:18px}.info h3{margin:0 0 7px}.info p{margin:0;color:var(--muted);font-size:12px}.code{margin-top:10px;background:#0f172a;color:#dbeafe;border-radius:9px;padding:10px;font:11px/1.55 ui-monospace,monospace}.faq{max-width:820px}.faq details{border-bottom:1px solid var(--line);padding:15px 0}.faq summary{font-weight:800;cursor:pointer}.faq p{color:var(--muted)}footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:11px}.foot{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}@media(max-width:760px){.links{display:none}.form{flex-direction:column}.summary{grid-template-columns:1fr}.metrics,.grid{grid-template-columns:1fr 1fr}}@media(max-width:480px){.metrics,.grid{grid-template-columns:1fr}}
+</style></head><body>
+<header class="top"><div class="wrap nav"><a class="brand" href="/">Deploy<b>Pass</b></a><nav class="links"><a href="/security-headers-checker">Security headers</a><a href="#guide">HSTS guide</a><a href="#faq">FAQ</a></nav><a class="btn" href="/">Run full scan →</a></div></header>
+<main><section class="hero"><div class="wrap"><div class="crumb"><a href="/">DeployPass</a> / <a href="/security-headers-checker">Security Headers Checker</a> / HSTS Checker</div><span class="pill">Free · No signup · Passive public check</span><h1>Free HSTS Checker</h1><p class="lead">Test the Strict-Transport-Security header on any public website. Inspect max-age, includeSubDomains and preload directives, then get a practical configuration review.</p><form class="form" id="form"><input id="url" type="url" placeholder="Enter a website URL (e.g. example.com)" required><button class="btn" id="btn">Check HSTS →</button></form><div class="fine">HSTS is only meaningful when delivered over HTTPS. DeployPass performs passive public checks only.</div><div class="status" id="status">Checking HSTS configuration…</div></div></section>
+<section class="result" id="result"><div class="wrap"><div class="summary"><div class="card"><div style="font-size:11px;color:#64748b;font-weight:800">HSTS SCORE</div><div class="score"><span id="score">—</span><small>/100</small></div><span id="verdict" class="badge warning">REVIEW</span></div><div class="card"><h2 style="margin:0">Strict-Transport-Security review</h2><p id="target" style="color:#64748b"></p><div class="metrics"><div class="metric"><b id="present">—</b><span>Header</span></div><div class="metric"><b id="age">—</b><span>Max-age</span></div><div class="metric"><b id="subs">—</b><span>Subdomains</span></div><div class="metric"><b id="preload">—</b><span>Preload</span></div></div><div class="raw" id="raw">Strict-Transport-Security: —</div></div></div><div class="advice"><h3 id="adviceTitle">Configuration review</h3><p id="advice"></p></div></div></section>
+<section class="section" id="guide"><div class="wrap"><div class="eyebrow">Understand the result</div><h2>What a strong HSTS policy contains.</h2><p class="intro">HSTS tells a browser to use HTTPS for future requests to a host. The header's directives control how long that rule lasts, whether it extends to subdomains, and whether the site signals an intent to join browser preload lists.</p><div class="grid"><article class="info"><h3>max-age</h3><p>The number of seconds a browser remembers the HTTPS-only policy. A one-year value is 31536000 seconds.</p><div class="code">max-age=31536000</div></article><article class="info"><h3>includeSubDomains</h3><p>Extends the policy to subdomains. Enable it only when all intended subdomains are ready for HTTPS.</p><div class="code">includeSubDomains</div></article><article class="info"><h3>preload</h3><p>Signals intent to participate in browser preload programs. The directive alone does not mean the domain is actually preloaded.</p><div class="code">preload</div></article><article class="info"><h3>Preload-style header</h3><p>A commonly used preload-ready form combines a long max-age with both directives.</p><div class="code">Strict-Transport-Security: max-age=31536000; includeSubDomains; preload</div></article></div></div></section>
+<section class="section alt"><div class="wrap"><div class="eyebrow">Important</div><h2>Do not enable preload casually.</h2><p class="intro">HSTS can make HTTP-only subdomains unreachable. Before using includeSubDomains or pursuing preload, confirm that the root domain and every affected subdomain can remain on HTTPS. DeployPass checks the observed header; it does not claim that a domain is present in a browser preload list.</p></div></section>
+<section class="section" id="faq"><div class="wrap faq"><div class="eyebrow">FAQ</div><h2>HSTS checker FAQ</h2><details open><summary>What is HSTS?</summary><p>HTTP Strict Transport Security is a browser policy delivered through the Strict-Transport-Security response header. It tells supporting browsers to use HTTPS for future requests to the host.</p></details><details><summary>What max-age should HSTS use?</summary><p>The right rollout depends on your environment. For preload eligibility, a max-age of at least 31536000 seconds is required. Teams often begin more cautiously before committing to a long-lived policy.</p></details><details><summary>Does the preload directive mean my site is preloaded?</summary><p>No. The directive signals intent. Actual preload-list inclusion has additional requirements and a separate submission process.</p></details><details><summary>Why is includeSubDomains risky?</summary><p>It applies the HTTPS-only policy to subdomains too. A legacy or internal subdomain that cannot serve HTTPS can become inaccessible to browsers enforcing the policy.</p></details><details><summary>Can I check all security headers?</summary><p>Yes. Use DeployPass Security Headers Checker for CSP, HSTS, MIME sniffing, framing, Referrer-Policy, CORS and observable cookie signals.</p></details></div></section></main>
+<footer><div class="wrap foot"><b>DeployPass</b><span>© 2026 DeployPass · Public-surface deployment security checks.</span><a href="/security-headers-checker">Security Headers Checker →</a></div></footer>
+<script>
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+document.getElementById('form').addEventListener('submit',async e=>{e.preventDefault();const b=document.getElementById('btn'),st=document.getElementById('status');b.disabled=true;b.textContent='Checking…';st.style.display='block';st.textContent='Checking HSTS configuration…';try{const r=await fetch('/api/hsts',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:document.getElementById('url').value})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Check failed');render(d);st.textContent='HSTS check complete.'}catch(x){st.textContent=x.message||'Check failed.'}finally{b.disabled=false;b.textContent='Check HSTS →'}});
+function render(d){document.getElementById('score').textContent=d.score;const v=document.getElementById('verdict');v.textContent=d.verdict;v.className='badge '+(d.verdict==='PASS'?'pass':d.verdict==='FAIL'?'critical':'warning');document.getElementById('target').textContent='Checked '+d.target;document.getElementById('present').textContent=d.present?'Yes':'No';document.getElementById('age').textContent=d.maxAge==null?'Missing':d.maxAge+'s';document.getElementById('subs').textContent=d.includeSubDomains?'Yes':'No';document.getElementById('preload').textContent=d.preload?'Yes':'No';document.getElementById('raw').textContent='Strict-Transport-Security: '+(d.raw||'Not detected');document.getElementById('adviceTitle').textContent=d.title;document.getElementById('advice').textContent=d.advice;document.getElementById('result').style.display='block';document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'})}
+</script></body></html>`;
+
+function parseHsts(value){
+  const out={present:!!value,maxAge:null,includeSubDomains:false,preload:false};
+  if(!value)return out;
+  for(const part of value.split(';')){const p=part.trim();const m=p.match(/^max-age\s*=\s*(\d+)$/i);if(m)out.maxAge=Number(m[1]);else if(/^includesubdomains$/i.test(p))out.includeSubDomains=true;else if(/^preload$/i.test(p))out.preload=true}
+  return out;
+}
+async function hstsCheck(target){
+  const {res,finalUrl}=await safeFetch(target.toString());
+  if(!res.ok)throw new Error(`Target returned HTTP ${res.status}.`);
+  const raw=res.headers.get('strict-transport-security')||'';
+  const p=parseHsts(raw);let score=0;
+  if(finalUrl.protocol==='https:')score+=20;if(p.present)score+=35;if(p.maxAge!==null&&p.maxAge>0)score+=15;if(p.maxAge!==null&&p.maxAge>=31536000)score+=10;if(p.includeSubDomains)score+=10;if(p.preload)score+=10;
+  let verdict='REVIEW',title='HSTS is present, but review the policy.',advice='Review the observed directives against the HTTPS coverage of this domain and its subdomains.';
+  if(finalUrl.protocol!=='https:'){verdict='FAIL';title='The final page is not HTTPS.';advice='HSTS must be delivered over HTTPS. Enable HTTPS and redirect HTTP traffic before relying on HSTS.'}
+  else if(!p.present){verdict='FAIL';title='Strict-Transport-Security was not detected.';advice='After HTTPS is stable, add an HSTS policy with an appropriate max-age. Add includeSubDomains only when affected subdomains are HTTPS-ready.'}
+  else if(p.maxAge===0){verdict='FAIL';title='HSTS is being disabled with max-age=0.';advice='If this is not intentional, deploy a positive max-age after confirming HTTPS is stable.'}
+  else if(p.maxAge>=31536000&&p.includeSubDomains&&p.preload){verdict='PASS';title='Strong preload-style HSTS header detected.';advice='The observed header has a one-year-or-longer max-age plus includeSubDomains and preload. This does not by itself prove actual preload-list inclusion.'}
+  else if(p.maxAge>=31536000){verdict='PASS';title='Strong long-lived HSTS policy detected.';advice='The observed max-age is at least one year. includeSubDomains and preload are optional policy choices and should only be enabled when their operational requirements are understood.'}
+  return {ok:true,target:finalUrl.origin,raw,...p,score,verdict,title,advice};
+}
+
+
     if (url.pathname === "/robots.txt") {
       const robots = `User-agent: *\nAllow: /\n\nSitemap: https://deploypass.com/sitemap.xml\n`;
       return new Response(robots, {
@@ -946,6 +990,11 @@ export default {
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://deploypass.com/hsts-checker</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>`;
       return new Response(sitemap, {
         headers: {
@@ -965,6 +1014,15 @@ export default {
           "referrer-policy":"strict-origin-when-cross-origin"
         }
       });
+    }
+
+    if (url.pathname === "/hsts-checker" || url.pathname === "/hsts-checker/") {
+      return new Response(HSTS_HTML, {headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300","x-content-type-options":"nosniff","referrer-policy":"strict-origin-when-cross-origin"}});
+    }
+
+    if (url.pathname === "/api/hsts") {
+      if (request.method !== "POST") return json({error:"Method not allowed"},405);
+      try { const body=await request.json(); const target=normalizeTarget(body.url); return json(await hstsCheck(target)); } catch(e) { return json({error:e.message||"HSTS check failed"},400); }
     }
 
     const reportMatch = url.pathname.match(/^\/report\/([a-f0-9]{16})$/i);
