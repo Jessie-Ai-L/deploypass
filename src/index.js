@@ -9,6 +9,14 @@ const HTML = `<!doctype html>
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#ffffff">
   <link rel="canonical" href="https://deploypass.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DeployPass">
+  <meta property="og:title" content="Scan Your Website Before You Deploy | DeployPass">
+  <meta property="og:description" content="Run 19 passive deployment security checks for headers, cookies, CORS, frontend exposure and common public misconfigurations.">
+  <meta property="og:url" content="https://deploypass.com/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Scan Your Website Before You Deploy | DeployPass">
+  <meta name="twitter:description" content="19 passive deployment security checks with actionable fixes and shareable reports.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563EB'/%3E%3Cpath d='M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z' fill='white'/%3E%3Cpath d='m29 32 4 4 9-10' fill='none' stroke='%2310B981' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
     :root{
@@ -717,7 +725,7 @@ function reportHtml(report) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
+<meta name="robots" content="noindex,follow">
 <meta name="theme-color" content="#ffffff">
 <title>DeployPass Security Report · ${escHtml(data.target)}</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563EB'/%3E%3Cpath d='M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z' fill='white'/%3E%3Cpath d='m29 32 4 4 9-10' fill='none' stroke='%2310B981' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -785,6 +793,34 @@ export default {
       return json({ok:true, service:"deploypass", version:"scanner-v4.0"});
     }
 
+    if (url.pathname === "/robots.txt") {
+      const robots = `User-agent: *\nAllow: /\n\nSitemap: https://deploypass.com/sitemap.xml\n`;
+      return new Response(robots, {
+        headers: {
+          "content-type":"text/plain; charset=utf-8",
+          "cache-control":"public, max-age=3600"
+        }
+      });
+    }
+
+    if (url.pathname === "/sitemap.xml") {
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://deploypass.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
+      return new Response(sitemap, {
+        headers: {
+          "content-type":"application/xml; charset=utf-8",
+          "cache-control":"public, max-age=3600",
+          "x-content-type-options":"nosniff"
+        }
+      });
+    }
+
     const reportMatch = url.pathname.match(/^\/report\/([a-f0-9]{16})$/i);
     if (reportMatch) {
       if (!env?.DB) return new Response("Report storage is unavailable.", {status:503});
@@ -817,7 +853,7 @@ export default {
             "cache-control":"public, max-age=300",
             "x-content-type-options":"nosniff",
             "referrer-policy":"no-referrer",
-            "x-robots-tag":"noindex, nofollow"
+            "x-robots-tag":"noindex, follow"
           }
         });
       } catch (err) {
