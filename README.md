@@ -58,3 +58,12 @@ Successful scans are saved best-effort to the `scans` table through the `DB` D1 
 - The scanner UI exposes a copyable URL like `/report/abc123...`.
 - Shared report pages are `noindex,nofollow` and use non-sequential random tokens.
 - A D1 write failure never blocks the scan result itself.
+
+## v4.0 Production UI
+
+- Adds the DeployPass logo/brand system directly as inline SVG.
+- Rebuilds the landing page to match the approved white/blue developer-security UI.
+- Adds product navigation, How it works, What we check, For developers, and beta pricing sections.
+- Rebuilds scan results with compact score summary, filters, issue cards, share controls, and reduced template-like styling.
+- Rebuilds shared report pages with branded navigation, score summary, filters, CTA, and mobile responsive layout.
+- Scanner logic, D1 history, report persistence, and security boundaries remain unchanged.

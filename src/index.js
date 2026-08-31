@@ -5,140 +5,326 @@ const HTML = `<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>AI App Security Scanner | DeployPass</title>
-  <meta name="description" content="Run passive public-surface security checks for AI-built apps before you deploy. Check security headers, source maps, frontend secret patterns, HTTPS, and more.">
+  <meta name="description" content="Scan your website before you deploy. DeployPass checks security headers, cookies, CORS, source maps, frontend secrets and other public deployment risks.">
   <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="canonical" href="https://deploypass.com/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563EB'/%3E%3Cpath d='M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z' fill='white'/%3E%3Cpath d='m29 32 4 4 9-10' fill='none' stroke='%2310B981' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
-    :root{--bg:#f7f9fc;--card:#fff;--text:#0f172a;--muted:#526070;--line:#dbe3ef;--soft:#eef4fb;--good:#147d4f;--warn:#9a6700;--bad:#b42318;--blue:#2457e6}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    a{color:inherit}.wrap{width:min(1040px,calc(100% - 36px));margin:auto}
-    header{padding:24px 0}.nav{display:flex;align-items:center;justify-content:space-between}.brand{font-size:22px;font-weight:800;text-decoration:none}.pill{font-size:13px;border:1px solid var(--line);padding:7px 11px;border-radius:999px;background:#fff}
-    .hero{padding:54px 0 28px;text-align:center}.eyebrow{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#53657c}
-    h1{font-size:clamp(42px,7vw,74px);line-height:.98;letter-spacing:-.055em;margin:14px auto 18px;max-width:850px}.sub{font-size:19px;color:var(--muted);max-width:760px;margin:0 auto}
-    .scanbox{margin:34px auto 0;max-width:800px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 18px 50px rgba(15,23,42,.07)}
-    .formrow{display:flex;gap:10px}.url{flex:1;font:inherit;padding:15px 16px;border:1px solid #c9d5e5;border-radius:12px;outline:none}.url:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(36,87,230,.12)}
-    button{border:0;border-radius:12px;padding:14px 20px;font-weight:800;font-size:15px;background:var(--text);color:#fff;cursor:pointer}button:disabled{opacity:.55;cursor:wait}
-    .note{margin:10px 2px 0;font-size:13px;color:#6b7788;text-align:left}
-    #status{display:none;margin:18px 0 0;text-align:left}.statusline{padding:13px 14px;border-radius:12px;background:var(--soft);color:#314158}
-    #results{display:none;padding:32px 0 64px}.summary{display:grid;grid-template-columns:210px 1fr;gap:18px}.scorecard,.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
-    .score{font-size:64px;font-weight:900;letter-spacing:-.06em;line-height:1}.score small{font-size:20px;color:#718096}.verdict{display:inline-block;margin-top:13px;font-size:13px;font-weight:900;letter-spacing:.08em;padding:7px 10px;border-radius:999px}
-    .pass{background:#e9f8f0;color:var(--good)}.review{background:#fff6db;color:var(--warn)}.fail{background:#fff0ee;color:var(--bad)}.na{background:#eef2f7;color:#65748a}
-    .summary h2{font-size:28px;margin:0 0 8px}.summary p{margin:0;color:var(--muted)}.stats{display:flex;gap:18px;margin-top:17px;flex-wrap:wrap}.stat b{font-size:20px}.stat span{display:block;font-size:12px;color:#748196;text-transform:uppercase;letter-spacing:.08em}
-    .checks{display:grid;gap:12px;margin-top:18px}.check{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}.checktop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.check h3{margin:0;font-size:17px}.badge{font-size:12px;font-weight:900;padding:5px 8px;border-radius:999px;white-space:nowrap}.check p{margin:7px 0 0;color:var(--muted);font-size:14px}.fix{margin-top:10px;padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px;color:#405065}.guidance{display:grid;gap:8px;margin-top:10px}.guide{padding:11px 12px;background:#f8fafc;border-radius:10px;font-size:13px;color:#405065}.guide b{color:var(--text)}
-    .sharebar{display:none;margin:18px 0 0;align-items:center;gap:10px;flex-wrap:wrap}.sharelink{flex:1;min-width:260px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#405065;font-size:14px}.sharebtn{padding:12px 16px}.sectiontitle{font-size:23px;margin:26px 0 10px}.scope{margin:30px 0 70px;background:#eef4fb;border-radius:18px;padding:18px 20px;color:#405065}.scope b{color:var(--text)}
-    footer{border-top:1px solid var(--line);padding:24px 0 36px;color:#748196;font-size:13px}
-    @media(max-width:700px){.formrow{flex-direction:column}.summary{grid-template-columns:1fr}.hero{padding-top:34px}}
+    :root{
+      --blue:#2563eb;--cyan:#0ea5e9;--green:#10b981;--orange:#f59e0b;
+      --ink:#0f172a;--ink2:#1e293b;--muted:#64748b;--line:#dbe4ef;
+      --soft:#f4f7fb;--soft2:#eef5ff;--white:#fff;--danger:#dc2626;
+      --shadow:0 20px 55px rgba(15,23,42,.08);
+    }
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--ink);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:inherit}.wrap{width:min(1120px,calc(100% - 36px));margin:auto}
+    .topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid rgba(219,228,239,.85)}
+    .nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-size:20px;font-weight:850;letter-spacing:-.025em}
+    .brandmark{width:28px;height:28px;flex:0 0 28px}.navlinks{display:flex;align-items:center;gap:26px;color:#334155;font-size:13px;font-weight:650}.navlinks a{text-decoration:none}.navlinks a:hover{color:var(--blue)}
+    .navright{display:flex;align-items:center;gap:12px}.textlink{text-decoration:none;font-size:13px;font-weight:700;color:#334155}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:10px;padding:12px 16px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none;transition:.18s ease}
+    .btn-dark{background:var(--ink);color:#fff;box-shadow:0 8px 18px rgba(15,23,42,.15)}.btn-dark:hover{transform:translateY(-1px);background:#172033}.btn-light{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn-blue{background:var(--blue);color:#fff}.btn:disabled{opacity:.6;cursor:wait;transform:none}
+    .hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#fbfdff 0%,#f6f9ff 55%,#f8fdff 100%);border-bottom:1px solid var(--line)}
+    .hero:before{content:"";position:absolute;width:520px;height:520px;border-radius:50%;right:-170px;top:-170px;background:radial-gradient(circle,rgba(37,99,235,.18),rgba(14,165,233,.09) 42%,transparent 68%)}
+    .hero:after{content:"";position:absolute;width:420px;height:420px;border-radius:50%;right:180px;bottom:-300px;background:radial-gradient(circle,rgba(16,185,129,.12),transparent 70%)}
+    .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.35fr) 330px;gap:58px;align-items:center;padding:74px 0 58px}
+    .kicker{display:inline-flex;align-items:center;gap:7px;border:1px solid #cfe0ff;background:#eef5ff;color:#1d4ed8;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800}
+    .hero h1{font-size:clamp(46px,6vw,72px);line-height:.98;letter-spacing:-.055em;margin:18px 0 20px;max-width:760px}.hero h1 em{font-style:normal;color:var(--blue)}
+    .lead{font-size:18px;color:#41516a;max-width:680px;margin:0 0 26px}
+    .scanbox{max-width:760px}.formrow{display:flex;background:#fff;border:1px solid #cdd9e8;border-radius:12px;padding:5px;box-shadow:0 10px 28px rgba(37,99,235,.07)}
+    .url{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:13px 14px;font:inherit;color:var(--ink)}.url::placeholder{color:#94a3b8}
+    .note{display:flex;align-items:center;gap:7px;margin:10px 8px 0;color:#64748b;font-size:12px}.note svg{flex:none}
+    #status{display:none;margin-top:12px}.statusline{border-radius:10px;padding:11px 13px;background:#eef5ff;color:#334155;font-size:13px}
+    .preview{background:rgba(255,255,255,.88);border:1px solid #d8e2ee;border-radius:18px;padding:22px;box-shadow:var(--shadow);transform:rotate(.15deg)}
+    .preview .mini{font-size:12px;color:#64748b;font-weight:750}.preview-score{font-size:48px;font-weight:900;letter-spacing:-.05em;line-height:1;margin:7px 0}.preview-score small{font-size:16px;color:#64748b}.tag{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900}
+    .pass{background:#e8f8f0;color:#087a4c}.review{background:#fff4d8;color:#946200}.fail{background:#feeceb;color:#b42318}.na{background:#eef2f7;color:#64748b}
+    .meter{height:7px;background:#e7edf5;border-radius:999px;overflow:hidden;margin:14px 0 18px}.meter i{display:block;height:100%;width:94%;background:var(--green);border-radius:inherit}
+    .mini-check{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #edf1f6;color:#41516a;font-size:13px}.ok{color:var(--green);font-weight:900}.warn{color:var(--orange);font-weight:900}
+    .stacks{position:relative;z-index:1;padding:0 0 30px;text-align:center}.stacks-label{color:#64748b;font-size:12px;margin-bottom:12px}.stackrow{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;color:#334155;font-size:13px;font-weight:750}.stackrow span{display:inline-flex;align-items:center;gap:6px}
+    .benefits{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 0 64px}.benefit{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 12px 35px rgba(15,23,42,.035)}.benefit-icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#eef5ff;color:var(--blue);font-weight:900;margin-bottom:13px}.benefit h3{font-size:16px;margin:0 0 6px}.benefit p{margin:0;color:#64748b;font-size:13px}
+    #results{display:none;background:#f7f9fc;border-bottom:1px solid var(--line);padding:42px 0 70px}.result-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}.backlink{font-size:13px;color:#475569;text-decoration:none;font-weight:750}
+    .result-grid{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px}.scorepanel,.resultcard{background:#fff;border:1px solid var(--line);border-radius:16px}.scorepanel{padding:22px}.resultcard{padding:20px 22px}.score{font-size:58px;font-weight:900;line-height:1;letter-spacing:-.05em}.score small{font-size:17px;color:#64748b}.verdict{display:inline-flex;margin-top:10px;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:900}
+    .scoremeta{border-top:1px solid #edf1f6;margin-top:18px;padding-top:14px;display:grid;gap:5px;font-size:12px;color:#64748b}.scoremeta b{color:#334155}.scorebar{height:7px;background:#edf1f6;border-radius:999px;overflow:hidden;margin:15px 0}.scorebar i{display:block;height:100%;border-radius:inherit;background:var(--green)}
+    .summary-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid #a7e8ce;background:#fbfffd;border-radius:12px;padding:16px 18px}.summary-copy{display:flex;align-items:center;gap:12px}.summary-icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:#fff;font-size:20px;font-weight:900}.summary-banner h2{font-size:18px;margin:0 0 2px}.summary-banner p{margin:0;color:#64748b;font-size:12px}
+    .share-actions{display:flex;gap:8px;flex-wrap:wrap}.sharebar{display:none;margin-top:12px;gap:8px;align-items:center}.sharelink{flex:1;min-width:230px;border:1px solid var(--line);border-radius:9px;padding:10px 11px;background:#fff;color:#475569;font-size:12px}.sharebtn{padding:10px 13px}
+    .tabs{display:flex;align-items:center;gap:10px;margin:18px 0 12px;border-bottom:1px solid var(--line)}.tab{border:0;background:transparent;color:#64748b;padding:10px 10px 11px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;border-bottom:2px solid transparent}.tab.active{color:var(--ink);border-color:var(--blue)}
+    .topfixes{display:grid;gap:10px}.check,.fixcard{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px 16px}.checktop,.fixhead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.check h3,.fixcard h3{font-size:14px;margin:0}.check p,.fixcard p{font-size:12px;color:#64748b;margin:5px 0 0}.badge{display:inline-flex;white-space:nowrap;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900}
+    .guidance{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}.guide{background:#f7f9fc;border-radius:9px;padding:9px 10px;color:#475569;font-size:11px}.guide b{color:#334155}
+    .checks{display:grid;gap:8px}.check.compact-pass .guidance{display:none}.check.compact-pass{padding:13px 15px}.check[data-hidden="true"]{display:none}
+    .sectiontitle{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:18px;margin:24px 0 11px}
+    .scope{margin-top:18px;background:#eef5ff;border-radius:12px;padding:14px 15px;color:#526070;font-size:12px}
+    .product-section{padding:76px 0}.section-head{max-width:690px;margin-bottom:28px}.section-head .eyebrow{font-size:12px;color:var(--blue);font-weight:850;letter-spacing:.12em;text-transform:uppercase}.section-head h2{font-size:clamp(30px,4vw,44px);line-height:1.05;letter-spacing:-.035em;margin:9px 0}.section-head p{margin:0;color:#64748b;font-size:16px}
+    .howgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.howcard{border:1px solid var(--line);border-radius:16px;padding:22px}.step{font-size:11px;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:.12em}.howcard h3{font-size:18px;margin:9px 0 7px}.howcard p{margin:0;color:#64748b;font-size:13px}
+    .checkgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.checkgroup{background:#f8fafc;border:1px solid var(--line);border-radius:15px;padding:18px}.checkgroup h3{font-size:15px;margin:0 0 9px}.checkgroup p{font-size:13px;color:#64748b;margin:0}
+    .developer{background:#0f172a;color:#fff}.developer .section-head p{color:#aebbd0}.developer .section-head .eyebrow{color:#60a5fa}.devgrid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}.devbox{border:1px solid #28364c;background:#151f31;border-radius:16px;padding:22px}.devbox h3{margin:0 0 8px}.devbox p{color:#aebbd0;margin:0;font-size:13px}.code{margin-top:15px;background:#0a1220;border:1px solid #25334a;border-radius:12px;padding:14px;font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:#d6e2f2;overflow:auto}
+    .pricing{background:#f8fafc}.pricecard{max-width:650px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 15px 40px rgba(15,23,42,.04)}.pricecard h3{margin:0;font-size:21px}.pricecard p{color:#64748b}.pricebig{font-size:34px;font-weight:900}.pricebig small{font-size:14px;color:#64748b;font-weight:700}
+    footer{border-top:1px solid var(--line);padding:28px 0 38px;background:#fff}.foot{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.footcopy{color:#64748b;font-size:12px}.footlinks{display:flex;gap:18px;font-size:12px;color:#475569}
+    @media(max-width:900px){.navlinks{display:none}.hero-grid{grid-template-columns:1fr;padding-top:54px}.preview{max-width:420px}.benefits,.howgrid{grid-template-columns:1fr}.checkgrid{grid-template-columns:1fr}.devgrid{grid-template-columns:1fr}.result-grid{grid-template-columns:1fr}.scorepanel{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}.scoremeta{margin:0;padding:0 0 0 20px;border-top:0;border-left:1px solid #edf1f6}.guidance{grid-template-columns:1fr}}
+    @media(max-width:620px){.wrap{width:min(100% - 24px,1120px)}.nav{height:62px}.navright .textlink{display:none}.hero-grid{padding:42px 0 38px}.hero h1{font-size:44px}.lead{font-size:16px}.formrow{flex-direction:column}.formrow .btn{width:100%}.benefits{padding-bottom:42px}.preview{display:none}.stacks{padding-top:8px}.result-head{align-items:flex-start}.summary-banner{align-items:flex-start;flex-direction:column}.scorepanel{display:block}.scoremeta{margin-top:16px;padding:14px 0 0;border-left:0;border-top:1px solid #edf1f6}.sharebar{flex-direction:column;align-items:stretch}.sharelink{min-width:0;width:100%}}
   </style>
 </head>
 <body>
-<header><div class="wrap nav"><a class="brand" href="/">DeployPass</a><span class="pill">Passive security checks</span></div></header>
+<header class="topbar">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="DeployPass home">
+      <svg class="brandmark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563EB"/><path d="M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z" fill="#fff"/><path d="m29 32 4 4 9-10" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Deploy<span style="color:#2563eb">Pass</span></span>
+    </a>
+    <nav class="navlinks" aria-label="Primary">
+      <a href="#how-it-works">How it works</a>
+      <a href="#what-we-check">What we check</a>
+      <a href="#for-developers">For developers</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <div class="navright">
+      <a class="textlink" href="#what-we-check">Docs</a>
+      <a class="btn btn-dark" href="#scanner">Start scanning <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</header>
+
 <main>
-  <section class="hero"><div class="wrap">
-    <div class="eyebrow">AI App Security Scanner</div>
-    <h1>Know before you deploy.</h1>
-    <p class="sub">Check an AI-built app for obvious public exposure and security misconfigurations before launch.</p>
-    <div class="scanbox">
-      <form id="scanForm">
-        <div class="formrow">
-          <input class="url" id="url" name="url" type="url" placeholder="https://yourapp.com" autocomplete="url" required>
-          <button id="scanBtn" type="submit">Run free scan</button>
+<section class="hero" id="scanner">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="kicker">⚡ Free · No signup · 19 security checks</span>
+      <h1>Scan your website<br>before you <em>deploy.</em></h1>
+      <p class="lead">Check security headers, configuration issues, and common public deployment risks in seconds. Catch problems early, ship with confidence.</p>
+      <div class="scanbox">
+        <form id="scanForm">
+          <div class="formrow">
+            <input class="url" id="url" name="url" type="url" placeholder="Enter a website URL (e.g. yoursite.com)" autocomplete="url" required>
+            <button class="btn btn-dark" id="scanBtn" type="submit">Run free scan <span aria-hidden="true">→</span></button>
+          </div>
+          <div class="note">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M7 10V8a5 5 0 0 1 10 0v2M6 10h12v10H6V10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Public, passive checks only. No login, brute force, port scan, or exploit attempts.
+          </div>
+        </form>
+        <div id="status"><div class="statusline" id="statusText">Starting scan…</div></div>
+      </div>
+    </div>
+    <aside class="preview" aria-label="Example DeployPass score">
+      <div class="mini">Example score</div>
+      <div class="preview-score">94<small>/100</small></div>
+      <span class="tag pass">PASS</span>
+      <div class="meter"><i></i></div>
+      <div class="mini-check"><span>Security headers</span><b class="ok">✓</b></div>
+      <div class="mini-check"><span>CORS configuration</span><b class="ok">✓</b></div>
+      <div class="mini-check"><span>Cookie flags</span><b class="warn">!</b></div>
+      <div class="mini-check"><span>Mixed content</span><b class="ok">✓</b></div>
+      <div class="mini-check"><span>… 15 more checks</span><span></span></div>
+    </aside>
+  </div>
+  <div class="wrap stacks">
+    <div class="stacks-label">Works with modern deployment stacks</div>
+    <div class="stackrow"><span>▲ Vercel</span><span>☁ Cloudflare</span><span>✣ Netlify</span><span>✦ Supabase</span><span>⌁ Render</span><span>◉ GitHub</span></div>
+  </div>
+  <div class="wrap benefits">
+    <article class="benefit"><div class="benefit-icon">↯</div><h3>Fast & private</h3><p>Results in seconds. No account required.</p></article>
+    <article class="benefit"><div class="benefit-icon">◇</div><h3>19 security checks</h3><p>Headers, cookies, CORS, frontend exposure, source maps, and more.</p></article>
+    <article class="benefit"><div class="benefit-icon">✓</div><h3>Actionable fixes</h3><p>Understand what matters and what to change before launch.</p></article>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <div class="result-head"><a class="backlink" href="#scanner">← Back to scan</a><button class="btn btn-dark" type="button" onclick="document.getElementById('url').focus();window.scrollTo({top:0,behavior:'smooth'})">New scan</button></div>
+    <div class="result-grid">
+      <aside class="scorepanel">
+        <div>
+          <div style="font-size:12px;color:#64748b;font-weight:750;margin-bottom:8px">Overall score</div>
+          <div class="score"><span id="score">—</span><small>/100</small></div>
+          <span class="verdict review" id="verdict">REVIEW</span>
+          <div class="scorebar"><i id="scoreBar" style="width:0%"></i></div>
         </div>
-        <div class="note">Public, passive checks only. No login, brute force, port scan, or exploit attempts.</div>
-      </form>
-      <div id="status"><div class="statusline" id="statusText">Starting scan…</div></div>
+        <div class="scoremeta">
+          <div><b>Critical</b> <span id="criticalCount">0</span></div>
+          <div><b>Warnings</b> <span id="warningCount">0</span></div>
+          <div><b>Passed</b> <span id="passedCount">0</span></div>
+          <div><b>N/A</b> <span id="naCount">0</span></div>
+          <div style="margin-top:5px"><b>Scanned URL</b><br><span id="scannedUrl">—</span></div>
+          <div><b>Checks performed</b><br><span id="checksPerformed">19 passive checks</span></div>
+        </div>
+      </aside>
+      <div>
+        <div class="summary-banner">
+          <div class="summary-copy"><div class="summary-icon" id="summaryIcon">✓</div><div><h2 id="summaryTitle">Scan complete</h2><p id="summaryText"></p></div></div>
+          <div class="share-actions"><button class="btn btn-light" id="shareBtn" type="button" style="display:none">Share report</button></div>
+        </div>
+        <div class="sharebar" id="shareBar"><input class="sharelink" id="shareLink" readonly aria-label="Shareable report URL"><button class="btn btn-light sharebtn" id="copyShareBtn" type="button">Copy report link</button></div>
+        <div id="topFixesWrap" style="display:none">
+          <div class="sectiontitle"><span>Issues to review</span></div>
+          <div class="topfixes" id="topFixes"></div>
+        </div>
+        <div class="sectiontitle"><span>Checks</span></div>
+        <div class="tabs" id="checkTabs">
+          <button class="tab active" data-filter="all" type="button">All</button>
+          <button class="tab" data-filter="pass" type="button">Passed</button>
+          <button class="tab" data-filter="warning" type="button">Warnings</button>
+          <button class="tab" data-filter="na" type="button">N/A</button>
+        </div>
+        <div class="checks" id="checks"></div>
+        <div class="scope"><b>Important:</b> DeployPass v4.0 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable. Neither result proves an application is secure.</div>
+      </div>
     </div>
-  </div></section>
-  <section id="results"><div class="wrap">
-    <div class="summary">
-      <div class="scorecard"><div class="score"><span id="score">—</span><small>/100</small></div><span class="verdict review" id="verdict">REVIEW</span></div>
-      <div class="card"><h2 id="summaryTitle">Scan complete</h2><p id="summaryText"></p><div class="stats">
-        <div class="stat"><b id="criticalCount">0</b><span>Critical</span></div>
-        <div class="stat"><b id="warningCount">0</b><span>Warnings</span></div>
-        <div class="stat"><b id="passedCount">0</b><span>Passed</span></div><div class="stat"><b id="naCount">0</b><span>N/A</span></div>
-      </div></div>
+  </div>
+</section>
+
+<section class="product-section" id="how-it-works">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">How it works</span><h2>A deployment check you can understand.</h2><p>DeployPass focuses on public signals a normal visitor can observe, then turns them into a short list of useful fixes.</p></div>
+    <div class="howgrid">
+      <article class="howcard"><div class="step">01 · Scan</div><h3>Enter a public URL</h3><p>DeployPass fetches the page and a limited sample of same-origin frontend assets.</p></article>
+      <article class="howcard"><div class="step">02 · Review</div><h3>See what matters first</h3><p>Get a score, severity breakdown, and clear explanations for warnings and critical findings.</p></article>
+      <article class="howcard"><div class="step">03 · Share</div><h3>Send the report</h3><p>Every successful scan can create a private, unlisted report link for your developer or team.</p></article>
     </div>
-    <div class="sharebar" id="shareBar">
-      <input class="sharelink" id="shareLink" readonly aria-label="Shareable report URL">
-      <button class="sharebtn" id="copyShareBtn" type="button">Copy report link</button>
+  </div>
+</section>
+
+<section class="product-section" id="what-we-check" style="background:#fbfcfe;border-top:1px solid #eef2f7;border-bottom:1px solid #eef2f7">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">What we check</span><h2>19 passive checks before launch.</h2><p>No exploit attempts. No credential testing. No port scans. DeployPass stays on the public surface.</p></div>
+    <div class="checkgrid">
+      <article class="checkgroup"><h3>Security headers</h3><p>HTTPS, CSP, HSTS, MIME sniffing protection, Referrer Policy and clickjacking controls.</p></article>
+      <article class="checkgroup"><h3>Browser & cookie posture</h3><p>CORS behavior, Secure / HttpOnly / SameSite cookie signals and obvious mixed content.</p></article>
+      <article class="checkgroup"><h3>Frontend exposure</h3><p>Secret-like patterns, public environment variables, source map references and debug indicators.</p></article>
+      <article class="checkgroup"><h3>Deployment hygiene</h3><p>Verbose error leakage, framework disclosure, scan coverage and public response review.</p></article>
     </div>
-    <div id="topFixesWrap" style="display:none"><h2 class="sectiontitle">Top things to fix before deployment</h2><div class="card" style="padding:14px"><div class="checks" id="topFixes" style="margin-top:0"></div></div></div><h2 class="sectiontitle">Checks</h2>
-    <div class="checks" id="checks"></div>
-    <div class="scope"><b>Important:</b> DeployPass v3.3 examines public responses and a limited sample of same-origin frontend assets. PASS means no obvious issue was detected by that check. N/A means the condition was not observable on the scanned response. Neither result proves an application is secure.</div>
-  </div></section>
+  </div>
+</section>
+
+<section class="product-section developer" id="for-developers">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">For developers</span><h2>Built for the gap between “it works” and “ship it.”</h2><p>Use DeployPass as a quick public-surface review after a deploy, before a launch, or before handing a build to a client.</p></div>
+    <div class="devgrid">
+      <article class="devbox"><h3>Developer-friendly reports</h3><p>Share one stable report URL instead of screenshots. Re-scan after fixes and compare the new result manually.</p><div class="code">POST /api/scan<br>{ "url": "https://yourapp.com" }<br><br>→ score · verdict · checks · reportUrl</div></article>
+      <article class="devbox"><h3>Designed to stay lightweight</h3><p>DeployPass samples large responses instead of blindly downloading everything. If a condition cannot be reliably checked, it returns N/A rather than pretending it passed.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="product-section pricing" id="pricing">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Pricing</span><h2>Free while we validate the product.</h2><p>No signup is required for the current public scanner.</p></div>
+    <div class="pricecard"><h3>DeployPass Free</h3><div class="pricebig">$0 <small>during beta</small></div><p>19 passive checks, actionable fixes, and shareable saved reports. Paid monitoring and deeper verified scans may come later.</p><a class="btn btn-dark" href="#scanner">Run a free scan →</a></div>
+  </div>
+</section>
 </main>
-<footer><div class="wrap">© 2026 DeployPass · Security checks for AI-built apps before deployment.</div></footer>
+
+<footer>
+  <div class="wrap foot">
+    <a class="brand" href="/" style="font-size:16px"><svg class="brandmark" style="width:22px;height:22px;flex-basis:22px" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563EB"/><path d="M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z" fill="#fff"/><path d="m29 32 4 4 9-10" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>DeployPass</span></a>
+    <div class="footcopy">© 2026 DeployPass · Security checks for AI-built apps before deployment.</div>
+    <div class="footlinks"><a href="#how-it-works">How it works</a><a href="#what-we-check">Checks</a><a href="#for-developers">Developers</a></div>
+  </div>
+</footer>
+
 <script>
-const form=document.getElementById('scanForm'), btn=document.getElementById('scanBtn'), status=document.getElementById('status'), statusText=document.getElementById('statusText'), results=document.getElementById('results');
-const shareBar=document.getElementById('shareBar'), shareLink=document.getElementById('shareLink'), copyShareBtn=document.getElementById('copyShareBtn');
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const GUIDANCE={
-  'Cookie HttpOnly flag':{why:'Cookies readable by JavaScript can be exposed if the page is affected by cross-site scripting.',how:'Set HttpOnly on authentication and session cookies that do not need JavaScript access.'},
-  'Public environment variables':{why:'Client-visible environment variables are shipped to browsers, so sensitive values can become public.',how:'Review every public-prefixed variable and keep credentials, private API keys, and privileged endpoints server-side.'},
-  'Framework version disclosure':{why:'Unnecessary framework or runtime details can give attackers extra information about the application stack.',how:'Remove or minimize technology/version disclosure headers where your framework or hosting platform allows it.'},
-  'Content Security Policy':{why:'Without a CSP, injected scripts and other unwanted resources may be easier to execute in a browser.',how:'Add a restrictive Content-Security-Policy, start in report-only mode if needed, test it, then enforce it.'},
-  'HSTS':{why:'Without HSTS, returning visitors may still be exposed to HTTP downgrade attempts before HTTPS is enforced.',how:'After HTTPS is stable, add Strict-Transport-Security with an appropriate max-age and expand carefully.'},
-  'MIME sniffing protection':{why:'Browsers may interpret a response as a different content type than intended, which can create avoidable security risk.',how:'Send X-Content-Type-Options: nosniff on applicable responses.'},
-  'Referrer Policy':{why:'URLs and path information can leak to other sites through the Referer header.',how:'Set a Referrer-Policy such as strict-origin-when-cross-origin unless your application requires something different.'},
-  'Clickjacking protection':{why:'Without framing restrictions, another site may embed your pages and trick users into unintended clicks.',how:'Use CSP frame-ancestors (preferred) or X-Frame-Options where appropriate.'},
-  'CORS configuration':{why:'Overly broad cross-origin access can let untrusted websites read responses that were intended for your own app.',how:'Allow only origins that genuinely need browser access and avoid wildcard origins for sensitive responses.'}
-};
-function guidance(c){var g=GUIDANCE[c.title]||{};return {why:g.why||'This finding can weaken the public security posture of the deployed application.',how:g.how||c.fix||'Review this configuration and apply the suggested remediation before deployment.'};}
-function actionHtml(c){if(!(c.level==='warning'||c.level==='critical'))return '';var g=guidance(c);return '<div class="guidance"><div class="guide"><b>Why it matters:</b> '+esc(g.why)+'</div><div class="guide"><b>How to fix:</b> '+esc(g.how)+'</div></div>';}
-form.addEventListener('submit',async e=>{
-  e.preventDefault(); btn.disabled=true; btn.textContent='Scanning…'; status.style.display='block'; results.style.display='none'; statusText.textContent='Fetching the public page and frontend assets…';
+const form=document.getElementById('scanForm');
+const btn=document.getElementById('scanBtn');
+const status=document.getElementById('status');
+const statusText=document.getElementById('statusText');
+const results=document.getElementById('results');
+const shareBar=document.getElementById('shareBar');
+const shareLink=document.getElementById('shareLink');
+const copyShareBtn=document.getElementById('copyShareBtn');
+const shareBtn=document.getElementById('shareBtn');
+const esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+
+function actionHtml(c){
+  var why=c.why||'This finding can weaken the public security posture of the deployed application.';
+  var how=c.fix||'Review the affected configuration and apply the safest production setting supported by your stack.';
+  if(c.level==='pass'||c.level==='na') return '';
+  return '<div class="guidance"><div class="guide"><b>Why it matters:</b> '+esc(why)+'</div><div class="guide"><b>How to fix:</b> '+esc(how)+'</div></div>';
+}
+
+form.addEventListener('submit',async function(e){
+  e.preventDefault();
+  btn.disabled=true;btn.innerHTML='Scanning…';
+  status.style.display='block';results.style.display='none';statusText.textContent='Fetching the public page and frontend assets…';
   try{
-    const r=await fetch('/api/scan',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:document.getElementById('url').value})});
-    const data=await r.json();
+    var r=await fetch('/api/scan',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:document.getElementById('url').value})});
+    var data=await r.json();
     if(!r.ok) throw new Error(data.error||'Scan failed');
-    render(data);
-    statusText.textContent='Scan complete.';
+    render(data);statusText.textContent='Scan complete.';
   }catch(err){statusText.textContent=err.message||'Scan failed. Please try again.'}
-  finally{btn.disabled=false;btn.textContent='Run free scan'}
+  finally{btn.disabled=false;btn.innerHTML='Run free scan <span aria-hidden="true">→</span>'}
 });
+
 function render(d){
   results.style.display='block';
-  if(d.reportUrl){
-    shareBar.style.display='flex';
-    shareLink.value=d.reportUrl;
-  }else{
-    shareBar.style.display='none';
-    shareLink.value='';
-  }
   document.getElementById('score').textContent=d.score;
-  const v=document.getElementById('verdict'); v.textContent=d.verdict; v.className='verdict '+(d.verdict==='PASS'?'pass':d.verdict==='FAIL'?'fail':'review');
-  document.getElementById('summaryTitle').textContent=d.verdict==='PASS'?'No obvious public issue detected':d.verdict==='FAIL'?'Fix critical issues before deployment':'Review these items before deployment';
-  document.getElementById('summaryText').textContent='Scanned '+d.target+' using '+d.checks.length+' passive checks.';
+  document.getElementById('scoreBar').style.width=Math.max(0,Math.min(100,d.score))+'%';
+  document.getElementById('scannedUrl').textContent=d.target;
+  document.getElementById('checksPerformed').textContent=d.checks.length+' passive checks';
+  var v=document.getElementById('verdict');
+  v.textContent=d.verdict;
+  v.className='verdict '+(d.verdict==='PASS'?'pass':d.verdict==='FAIL'?'fail':'review');
   document.getElementById('criticalCount').textContent=d.counts.critical;
   document.getElementById('warningCount').textContent=d.counts.warning;
   document.getElementById('passedCount').textContent=d.counts.pass;
   document.getElementById('naCount').textContent=d.counts.na||0;
-  var tf=document.getElementById('topFixesWrap'), tfl=document.getElementById('topFixes');
-  var fixes=(d.topFixes&&d.topFixes.length)?d.topFixes:(d.checks||[]).filter(function(c){return c.level==='critical'||c.level==='warning';}).slice(0,3);
+
+  var title=d.verdict==='FAIL'?'Fix critical issues before deployment':d.counts.warning>0?'Strong baseline — '+d.counts.warning+' item'+(d.counts.warning===1?'':'s')+' to review':'No obvious public issue detected';
+  document.getElementById('summaryTitle').textContent=title;
+  document.getElementById('summaryText').textContent='Scanned '+d.target+' using '+d.checks.length+' passive checks.';
+  var icon=document.getElementById('summaryIcon');
+  icon.textContent=d.verdict==='FAIL'?'!':'✓';
+  icon.style.background=d.verdict==='FAIL'?'#dc2626':d.counts.warning>0?'#f59e0b':'#10b981';
+
+  if(d.reportUrl){
+    shareBar.style.display='flex';shareLink.value=d.reportUrl;shareBtn.style.display='inline-flex';
+  }else{
+    shareBar.style.display='none';shareLink.value='';shareBtn.style.display='none';
+  }
+
+  var tf=document.getElementById('topFixesWrap'),tfl=document.getElementById('topFixes');
+  var fixes=(d.topFixes&&d.topFixes.length)?d.topFixes:(d.checks||[]).filter(function(c){return c.level==='critical'||c.level==='warning'}).slice(0,3);
   if(fixes.length){
     tf.style.display='block';
     tfl.innerHTML=fixes.map(function(c,i){
-      return '<article class="check"><div class="checktop"><div><h3>'+ (i+1)+'. '+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+(c.level==='critical'?'fail':'review')+'">'+(c.level==='critical'?'HIGH':'MEDIUM')+'</span></div>'+actionHtml(c)+'</article>';
+      var sev=c.level==='critical'?'HIGH':'MEDIUM';
+      return '<article class="fixcard"><div class="fixhead"><div><h3>'+esc((i+1)+'. '+c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+(c.level==='critical'?'fail':'review')+'">'+sev+'</span></div>'+actionHtml(c)+'</article>';
     }).join('');
-  } else {
-    tf.style.display='none'; tfl.innerHTML='';
-  }
-  document.getElementById('checks').innerHTML=d.checks.map(function(c){
+  }else{tf.style.display='none';tfl.innerHTML=''}
+
+  document.getElementById('checks').innerHTML=(d.checks||[]).map(function(c){
     var badgeClass=c.level==='pass'?'pass':c.level==='critical'?'fail':c.level==='na'?'na':'review';
     var label=c.level==='na'?'N/A':c.level.toUpperCase();
-    var fixHtml=actionHtml(c);
-    return '<article class="check"><div class="checktop"><div><h3>'+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+badgeClass+'">'+esc(label)+'</span></div>'+fixHtml+'</article>';
+    var compact=c.level==='pass'?' compact-pass':'';
+    return '<article class="check'+compact+'" data-level="'+esc(c.level)+'"><div class="checktop"><div><h3>'+esc(c.title)+'</h3><p>'+esc(c.detail)+'</p></div><span class="badge '+badgeClass+'">'+esc(label)+'</span></div>'+actionHtml(c)+'</article>';
   }).join('');
+
+  document.querySelectorAll('#checkTabs .tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelector('#checkTabs .tab[data-filter="all"]').classList.add('active');
+  applyFilter('all');
   results.scrollIntoView({behavior:'smooth',block:'start'});
 }
+
+function applyFilter(filter){
+  document.querySelectorAll('#checks .check').forEach(function(el){
+    var level=el.getAttribute('data-level');
+    var show=filter==='all'||(filter==='warning'&&(level==='warning'||level==='critical'))||filter===level;
+    el.setAttribute('data-hidden',show?'false':'true');
+  });
+}
+document.getElementById('checkTabs').addEventListener('click',function(e){
+  var t=e.target.closest('.tab');if(!t)return;
+  document.querySelectorAll('#checkTabs .tab').forEach(function(x){x.classList.remove('active')});
+  t.classList.add('active');applyFilter(t.getAttribute('data-filter'));
+});
+
 copyShareBtn.addEventListener('click',async function(){
-  if(!shareLink.value) return;
-  try{
-    await navigator.clipboard.writeText(shareLink.value);
-    copyShareBtn.textContent='Copied';
-    setTimeout(function(){copyShareBtn.textContent='Copy report link';},1400);
-  }catch(e){
-    shareLink.select();
-    document.execCommand('copy');
-  }
+  if(!shareLink.value)return;
+  try{await navigator.clipboard.writeText(shareLink.value);copyShareBtn.textContent='Copied';setTimeout(function(){copyShareBtn.textContent='Copy report link'},1400)}
+  catch(e){shareLink.select();document.execCommand('copy')}
+});
+shareBtn.addEventListener('click',async function(){
+  if(!shareLink.value)return;
+  if(navigator.share){try{await navigator.share({title:'DeployPass security report',url:shareLink.value});return}catch(e){}}
+  try{await navigator.clipboard.writeText(shareLink.value);shareBtn.textContent='Copied';setTimeout(function(){shareBtn.textContent='Share report'},1400)}catch(e){}
 });
 </script>
 </body></html>`;
@@ -514,11 +700,17 @@ function reportHtml(report) {
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[ch]));
   const statusClass = data.verdict === "PASS" ? "pass" : data.verdict === "FAIL" ? "fail" : "review";
-  const checkRows = (data.checks || []).map(c => {
+  const checkRows = (data.checks || []).map((c, i) => {
     const cls = c.level === "pass" ? "pass" : c.level === "critical" ? "fail" : c.level === "na" ? "na" : "review";
     const label = c.level === "na" ? "N/A" : String(c.level || "").toUpperCase();
-    return `<article class="check"><div class="row"><div><h3>${escHtml(c.title)}</h3><p>${escHtml(c.detail)}</p></div><span class="badge ${cls}">${escHtml(label)}</span></div></article>`;
+    const icon = c.level === "pass" ? "✓" : c.level === "critical" ? "!" : c.level === "na" ? "–" : "!";
+    return `<article class="check" data-level="${escHtml(c.level)}"><div class="checkicon ${cls}">${icon}</div><div class="checkcopy"><h3>${escHtml(c.title)}</h3><p>${escHtml(c.detail)}</p></div><span class="badge ${cls}">${escHtml(label)}</span></article>`;
   }).join("");
+
+  const countCritical = Number(data.counts?.critical)||0;
+  const countWarning = Number(data.counts?.warning)||0;
+  const countPass = Number(data.counts?.pass)||0;
+  const countNa = Number(data.counts?.na)||0;
 
   return `<!doctype html>
 <html lang="en">
@@ -526,38 +718,62 @@ function reportHtml(report) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>DeployPass Report · ${escHtml(data.target)}</title>
+<meta name="theme-color" content="#ffffff">
+<title>DeployPass Security Report · ${escHtml(data.target)}</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563EB'/%3E%3Cpath d='M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z' fill='white'/%3E%3Cpath d='m29 32 4 4 9-10' fill='none' stroke='%2310B981' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
-:root{--bg:#f7f9fc;--card:#fff;--text:#0f172a;--muted:#526070;--line:#dbe3ef;--good:#147d4f;--warn:#9a6700;--bad:#b42318}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.wrap{width:min(960px,calc(100% - 36px));margin:auto}header{padding:24px 0}.brand{font-size:22px;font-weight:800;text-decoration:none;color:inherit}
-.hero{padding:34px 0 20px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#64748b}.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.02;letter-spacing:-.045em;margin:10px 0}.hero p{color:var(--muted);margin:0}
-.summary{display:grid;grid-template-columns:200px 1fr;gap:16px;margin:18px 0}.card,.check{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
-.score{font-size:62px;font-weight:900;line-height:1}.score small{font-size:19px;color:#718096}.verdict,.badge{display:inline-block;font-size:12px;font-weight:900;padding:6px 9px;border-radius:999px}.verdict{margin-top:12px}
-.pass{background:#e9f8f0;color:var(--good)}.review{background:#fff6db;color:var(--warn)}.fail{background:#fff0ee;color:var(--bad)}.na{background:#eef2f7;color:#65748a}
-.stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px}.stat b{font-size:21px}.stat span{display:block;color:#748196;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
-.checks{display:grid;gap:11px;margin:14px 0 34px}.row{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.check h3{margin:0;font-size:17px}.check p{margin:7px 0 0;color:var(--muted);font-size:14px}
-.notice{padding:16px 18px;background:#eef4fb;border-radius:16px;color:#405065;margin:24px 0 54px}.meta{font-size:13px;color:#748196}
-@media(max-width:680px){.summary{grid-template-columns:1fr}}
+:root{--blue:#2563eb;--green:#10b981;--orange:#f59e0b;--ink:#0f172a;--muted:#64748b;--line:#dbe4ef;--soft:#f5f8fc;--danger:#dc2626}
+*{box-sizing:border-box}body{margin:0;background:#f7f9fc;color:var(--ink);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:inherit}.wrap{width:min(960px,calc(100% - 32px));margin:auto}.topbar{background:#fff;border-bottom:1px solid var(--line)}.nav{height:70px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:9px;text-decoration:none;font-size:19px;font-weight:850;letter-spacing:-.025em}.brandmark{width:27px;height:27px}.actions{display:flex;gap:8px}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px 13px;font:inherit;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}.btn-dark{background:#0f172a;color:#fff;border-color:#0f172a}.btn-blue{border-color:#bcd1ff;color:#1d4ed8}
+.hero{padding:42px 0 22px}.eyebrow{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#64748b}.hero h1{font-size:clamp(36px,6vw,58px);letter-spacing:-.045em;line-height:1.02;margin:10px 0}.meta{color:#64748b;font-size:13px}.reportid{display:inline-flex;align-items:center;gap:7px;margin-top:17px;font-size:12px;font-weight:750}.token{background:#eef5ff;color:#1d4ed8;border-radius:8px;padding:6px 9px}
+.summary{display:grid;grid-template-columns:210px 1fr;gap:16px;margin:18px 0 34px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px}.score{font-size:58px;font-weight:900;line-height:1;letter-spacing:-.05em}.score small{font-size:17px;color:#64748b}.verdict,.badge{display:inline-flex;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:900}.verdict{margin-top:10px}.pass{background:#e8f8f0;color:#087a4c}.review{background:#fff4d8;color:#946200}.fail{background:#feeceb;color:#b42318}.na{background:#eef2f7;color:#64748b}.meter{height:7px;background:#edf1f6;border-radius:999px;overflow:hidden;margin-top:15px}.meter i{display:block;height:100%;background:#10b981;border-radius:inherit}
+.card h2{font-size:17px;margin:0 0 13px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{display:flex;align-items:center;gap:8px}.dot{width:8px;height:8px;border-radius:50%}.dot.red{background:#ef4444}.dot.orange{background:#f59e0b}.dot.green{background:#10b981}.dot.gray{background:#94a3b8}.stat b{font-size:16px}.stat span{display:block;color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:.07em}
+.sectionrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}.sectionrow h2{font-size:20px;margin:0}.filters{display:flex;gap:7px;flex-wrap:wrap}.filter{border:1px solid var(--line);background:#fff;color:#64748b;border-radius:9px;padding:8px 10px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.filter.active{background:#0f172a;color:#fff;border-color:#0f172a}
+.checks{display:grid;gap:9px}.check{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 15px}.check[data-hidden="true"]{display:none}.checkicon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-weight:900}.checkcopy h3{font-size:13px;margin:0}.checkcopy p{font-size:11px;color:#64748b;margin:4px 0 0}
+.cta{margin:28px 0 22px;background:linear-gradient(135deg,#eef5ff,#f8fbff);border:1px solid #dbe8ff;border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px}.cta h3{margin:0 0 3px;font-size:15px}.cta p{margin:0;color:#64748b;font-size:12px}.notice{padding:14px 15px;background:#eef5ff;border-radius:12px;color:#526070;font-size:11px;margin:0 0 40px}
+footer{background:#fff;border-top:1px solid var(--line);padding:24px 0}.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}.footcopy{font-size:11px;color:#64748b}
+@media(max-width:680px){.nav{height:auto;padding:14px 0;align-items:flex-start}.actions{flex-wrap:wrap;justify-content:flex-end}.summary{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.sectionrow{align-items:flex-start;flex-direction:column}.cta{align-items:flex-start;flex-direction:column}.check{grid-template-columns:30px minmax(0,1fr) auto}.checkicon{width:28px;height:28px}}
 </style>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">DeployPass</a></div></header>
+<header class="topbar"><div class="wrap nav">
+<a class="brand" href="/"><svg class="brandmark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563EB"/><path d="M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z" fill="#fff"/><path d="m29 32 4 4 9-10" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Deploy<span style="color:#2563eb">Pass</span></span></a>
+<div class="actions"><a class="btn btn-blue" href="/">Scan another site</a><button class="btn btn-dark" id="shareReport" type="button">Share</button></div>
+</div></header>
 <main class="wrap">
-<section class="hero"><div class="eyebrow">Shared security report</div><h1>${escHtml(data.target)}</h1><p>Scan saved ${escHtml(report.created_at)} UTC · Report ${escHtml(report.token)}</p></section>
+<section class="hero"><div class="eyebrow">Shared security report</div><h1>${escHtml(data.target)}</h1><div class="meta">Generated by DeployPass · ${escHtml(report.created_at)} UTC</div><div class="reportid">Report ID <span class="token">${escHtml(report.token)}</span></div></section>
 <section class="summary">
-<div class="card"><div class="score">${Number(data.score)||0}<small>/100</small></div><span class="verdict ${statusClass}">${escHtml(data.verdict)}</span></div>
-<div class="card"><h2 style="margin:0">Deployment review</h2><div class="stats">
-<div class="stat"><b>${Number(data.counts?.critical)||0}</b><span>Critical</span></div>
-<div class="stat"><b>${Number(data.counts?.warning)||0}</b><span>Warnings</span></div>
-<div class="stat"><b>${Number(data.counts?.pass)||0}</b><span>Passed</span></div>
-<div class="stat"><b>${Number(data.counts?.na)||0}</b><span>N/A</span></div>
+<div class="card"><div class="score">${Number(data.score)||0}<small>/100</small></div><span class="verdict ${statusClass}">${escHtml(data.verdict)}</span><div class="meter"><i style="width:${Math.max(0,Math.min(100,Number(data.score)||0))}%"></i></div></div>
+<div class="card"><h2>Scan summary</h2><div class="stats">
+<div class="stat"><i class="dot red"></i><div><b>${countCritical}</b><span>Critical</span></div></div>
+<div class="stat"><i class="dot orange"></i><div><b>${countWarning}</b><span>Warnings</span></div></div>
+<div class="stat"><i class="dot green"></i><div><b>${countPass}</b><span>Passed</span></div></div>
+<div class="stat"><i class="dot gray"></i><div><b>${countNa}</b><span>N/A</span></div></div>
 </div></div>
 </section>
-<h2>Checks</h2>
-<section class="checks">${checkRows}</section>
-<div class="notice"><b>Important:</b> This is a saved DeployPass passive public-surface scan. It does not prove an application is secure, and the report may become outdated as the target changes.</div>
+<div class="sectionrow"><h2>Checks</h2><div class="filters" id="filters"><button class="filter active" data-filter="all">All (${(data.checks||[]).length})</button><button class="filter" data-filter="pass">Passed (${countPass})</button><button class="filter" data-filter="warning">Warnings (${countWarning+countCritical})</button><button class="filter" data-filter="na">N/A (${countNa})</button></div></div>
+<section class="checks" id="checks">${checkRows}</section>
+<section class="cta"><div><h3>Scan your own site</h3><p>Find public deployment issues before they become launch problems.</p></div><a class="btn btn-dark" href="/">Scan now →</a></section>
+<div class="notice"><b>Important:</b> This is a saved passive public-surface scan. It does not prove an application is secure, and the report can become outdated as the target changes.</div>
 </main>
+<footer><div class="wrap foot"><a class="brand" href="/" style="font-size:15px"><svg class="brandmark" style="width:21px;height:21px" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563EB"/><path d="M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z" fill="#fff"/><path d="m29 32 4 4 9-10" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>DeployPass</a><div class="footcopy">© 2026 DeployPass · This report is powered by DeployPass.</div></div></footer>
+<script>
+document.getElementById('filters').addEventListener('click',function(e){
+  var b=e.target.closest('.filter');if(!b)return;
+  document.querySelectorAll('.filter').forEach(function(x){x.classList.remove('active')});b.classList.add('active');
+  var f=b.getAttribute('data-filter');
+  document.querySelectorAll('#checks .check').forEach(function(el){
+    var level=el.getAttribute('data-level');
+    var show=f==='all'||f===level||(f==='warning'&&(level==='warning'||level==='critical'));
+    el.setAttribute('data-hidden',show?'false':'true');
+  });
+});
+document.getElementById('shareReport').addEventListener('click',async function(){
+  var link=location.href;
+  if(navigator.share){try{await navigator.share({title:'DeployPass security report',url:link});return}catch(e){}}
+  try{await navigator.clipboard.writeText(link);this.textContent='Copied';var b=this;setTimeout(function(){b.textContent='Share'},1400)}catch(e){}
+});
+</script>
 </body></html>`;
 }
 
@@ -566,7 +782,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
-      return json({ok:true, service:"deploypass", version:"scanner-v3.3"});
+      return json({ok:true, service:"deploypass", version:"scanner-v4.0"});
     }
 
     const reportMatch = url.pathname.match(/^\/report\/([a-f0-9]{16})$/i);
