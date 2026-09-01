@@ -4,18 +4,18 @@ const HTML = `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>AI App Security Scanner | DeployPass</title>
-  <meta name="description" content="Scan your website before you deploy. DeployPass checks security headers, cookies, CORS, source maps, frontend secrets and other public deployment risks.">
+  <title>Website Security Scanner — Free Pre-Deployment Scan | DeployPass</title>
+  <meta name="description" content="Run a free website security scanner before you deploy. Check security headers, CORS, cookies, mixed content, frontend exposure and common configuration issues with 19 passive checks.">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#ffffff">
   <link rel="canonical" href="https://deploypass.com/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="DeployPass">
-  <meta property="og:title" content="Scan Your Website Before You Deploy | DeployPass">
-  <meta property="og:description" content="Run 19 passive deployment security checks for headers, cookies, CORS, frontend exposure and common public misconfigurations.">
+  <meta property="og:title" content="Website Security Scanner for Safer Deployments | DeployPass">
+  <meta property="og:description" content="Run a free website security scanner with 19 passive checks before you deploy.">
   <meta property="og:url" content="https://deploypass.com/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Scan Your Website Before You Deploy | DeployPass">
+  <meta name="twitter:title" content="Website Security Scanner for Safer Deployments | DeployPass">
   <meta name="twitter:description" content="19 passive deployment security checks with actionable fixes and shareable reports.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563EB'/%3E%3Cpath d='M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z' fill='white'/%3E%3Cpath d='m29 32 4 4 9-10' fill='none' stroke='%2310B981' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
@@ -97,8 +97,8 @@ const HTML = `<!doctype html>
   <div class="wrap hero-grid">
     <div>
       <span class="kicker">⚡ Free · No signup · 19 security checks</span>
-      <h1>Scan your website<br>before you <em>deploy.</em></h1>
-      <p class="lead">Check security headers, configuration issues, and common public deployment risks in seconds. Catch problems early, ship with confidence.</p>
+      <h1>Website Security Scanner<br>for Safer <em>Deployments.</em></h1>
+      <p class="lead">Scan your website before you deploy. Check security headers, CORS, cookies, mixed content, frontend exposure and common public deployment risks in seconds.</p>
       <div class="scanbox">
         <form id="scanForm">
           <div class="formrow">
@@ -200,6 +200,7 @@ const HTML = `<!doctype html>
       <a class="toolcard" href="/csp-checker"><div class="toolicon">C</div><h3>CSP Checker</h3><p>Analyze Content-Security-Policy directives, risky sources, framing controls and common CSP configuration issues.</p><span class="toolgo">Check CSP →</span></a>
       <a class="toolcard" href="/mixed-content-checker"><div class="toolicon">M</div><h3>Mixed Content Checker</h3><p>Find insecure HTTP images, scripts, stylesheets, iframes and other resources loaded by HTTPS pages.</p><span class="toolgo">Check mixed content →</span></a>
       <a class="toolcard" href="/cors-checker"><div class="toolicon">O</div><h3>CORS Checker</h3><p>Test cross-origin response headers, credentials behavior, allowed methods and preflight signals for a public endpoint.</p><span class="toolgo">Check CORS →</span></a>
+      <a class="toolcard" href="/permissions-policy-checker"><div class="toolicon">P</div><h3>Permissions Policy Checker</h3><p>Inspect the Permissions-Policy header and review browser feature controls for camera, microphone, geolocation, payment and more.</p><span class="toolgo">Check Permissions Policy →</span></a>
       <a class="toolcard" href="#scanner"><div class="toolicon">19</div><h3>Full Website Security Scan</h3><p>Run all 19 passive public-surface checks across headers, cookies, CORS, frontend exposure, source maps and deployment hygiene.</p><span class="toolgo">Run full scan →</span></a>
     </div>
   </div>
@@ -213,6 +214,18 @@ const HTML = `<!doctype html>
       <article class="checkgroup"><h3>Browser & cookie posture</h3><p>CORS behavior, Secure / HttpOnly / SameSite cookie signals and obvious mixed content.</p></article>
       <article class="checkgroup"><h3>Frontend exposure</h3><p>Secret-like patterns, public environment variables, source map references and debug indicators.</p></article>
       <article class="checkgroup"><h3>Deployment hygiene</h3><p>Verbose error leakage, framework disclosure, scan coverage and public response review.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="product-section" id="website-security-scanner">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Website security scanner</span><h2>A practical pre-deployment security scan for public websites.</h2><p>DeployPass is a lightweight website security scanner built for the moment between “it works” and “ship it.” Enter a public URL to review browser-facing security controls, configuration signals and frontend exposure without logging in, brute forcing credentials, scanning ports or attempting exploitation.</p></div>
+    <div class="checkgrid">
+      <article class="checkgroup"><h3>Check the public surface before launch</h3><p>A deployment can look correct while still shipping weak security headers, risky cookie flags, mixed HTTP resources, permissive cross-origin behavior or frontend debug signals. DeployPass groups these observable signals into one report so developers can review them before a release.</p></article>
+      <article class="checkgroup"><h3>Focused checks when you need detail</h3><p>Use the dedicated Security Headers, HSTS, CSP, Mixed Content, CORS and Permissions Policy tools when troubleshooting one control. Use the full website security scan when you want a broader pre-deployment review and a shareable result.</p></article>
+      <article class="checkgroup"><h3>Designed for modern deployment stacks</h3><p>The scanner works with public sites deployed on platforms such as Vercel, Cloudflare, Netlify, Render and GitHub Pages. Because DeployPass evaluates the response it can actually observe, a check may return N/A when a condition cannot be verified reliably.</p></article>
+      <article class="checkgroup"><h3>Not a penetration test</h3><p>DeployPass does not claim to prove that an application is secure. It is a passive website security scanner for fast configuration review before and after deployment. Application logic, authenticated routes and server-side vulnerabilities still require deeper security testing.</p></article>
     </div>
   </div>
 </section>
@@ -249,7 +262,7 @@ const HTML = `<!doctype html>
   <div class="wrap foot">
     <a class="brand" href="/" style="font-size:16px"><svg class="brandmark" style="width:22px;height:22px;flex-basis:22px" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563EB"/><path d="M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z" fill="#fff"/><path d="m29 32 4 4 9-10" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>DeployPass</span></a>
     <div class="footcopy">© 2026 DeployPass · Security checks for AI-built apps before deployment.</div>
-    <div class="footlinks"><a href="#tools">Tools</a><a href="/security-headers-checker">Security Headers</a><a href="/hsts-checker">HSTS</a><a href="/csp-checker">CSP</a><a href="/mixed-content-checker">Mixed Content</a><a href="/cors-checker">CORS</a></div>
+    <div class="footlinks"><a href="#tools">Tools</a><a href="/security-headers-checker">Security Headers</a><a href="/hsts-checker">HSTS</a><a href="/csp-checker">CSP</a><a href="/mixed-content-checker">Mixed Content</a><a href="/cors-checker">CORS</a><a href="/permissions-policy-checker">Permissions Policy</a></div>
   </div>
 </footer>
 
@@ -1091,6 +1104,11 @@ async function cspCheck(target){
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://deploypass.com/permissions-policy-checker</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>`;
       return new Response(sitemap, {
         headers: {
@@ -1102,6 +1120,45 @@ async function cspCheck(target){
     }
 
 
+
+const PERMISSIONS_POLICY_HTML = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Permissions Policy Checker — Test Header Free | DeployPass</title>
+<meta name="description" content="Free Permissions Policy checker. Test a website's Permissions-Policy header and review browser feature controls for camera, microphone, geolocation, payment and more.">
+<meta name="robots" content="index,follow"><link rel="canonical" href="https://deploypass.com/permissions-policy-checker">
+<meta property="og:title" content="Permissions Policy Checker | DeployPass"><meta property="og:description" content="Inspect Permissions-Policy browser feature controls on any public website."><meta property="og:url" content="https://deploypass.com/permissions-policy-checker"><meta property="og:type" content="website">
+<style>${FOCUSED_CSS}</style></head><body>
+<header class="top"><div class="wrap nav"><a class="brand" href="/" aria-label="DeployPass home"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563EB"/><path d="M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z" fill="#fff"/><path d="m29 32 4 4 9-10" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Deploy<b>Pass</b></span></a><nav class="links"><a href="/#tools">Tools</a><a href="/security-headers-checker">Security headers</a><a href="/csp-checker">CSP</a><a href="/cors-checker">CORS</a><a href="#faq">FAQ</a></nav><a class="btn" href="/">Run full scan →</a></div></header>
+<main><section class="hero"><div class="wrap"><div class="crumb"><a href="/">DeployPass</a> / Permissions Policy Checker</div><span class="pill">Free · No signup · Passive public check</span><h1>Free Permissions Policy Checker</h1><p class="lead">Inspect the Permissions-Policy response header on any public website. Review which browser features are restricted, allowed or not explicitly controlled.</p><form class="form" id="ppForm"><input id="ppUrl" type="url" required placeholder="Enter a website URL (e.g. example.com)"><button class="btn" id="ppBtn">Check policy →</button></form><p class="micro">DeployPass reads the public response header only. A missing policy is a hardening opportunity, not proof of a vulnerability.</p><div class="status" id="ppStatus" style="display:none"></div></div></section>
+<section class="results" id="ppResults" style="display:none"><div class="wrap resultgrid"><aside class="scorebox"><div class="label">POLICY SCORE</div><div class="big" id="ppScore">—<small>/100</small></div><span class="badge" id="ppVerdict">—</span></aside><div class="panel"><h2>Permissions-Policy review</h2><p id="ppTarget"></p><div class="stats" id="ppStats"></div><pre id="ppRaw"></pre><div id="ppFindings"></div></div></div></section>
+<section class="section"><div class="wrap"><span class="eyebrow">UNDERSTAND THE RESULT</span><h2>Control access to powerful browser features.</h2><p class="copy">Permissions-Policy lets a site limit access to browser capabilities such as camera, microphone, geolocation, payment and fullscreen. The right policy depends on the application: a marketing site may deny most powerful features, while a video or mapping app may intentionally allow a small set.</p><div class="cards"><article><h3>camera & microphone</h3><p>Restrict media capture when the page and its embedded frames do not need it.</p><code>camera=(), microphone=()</code></article><article><h3>geolocation</h3><p>Limit location access to the origins that genuinely require it.</p><code>geolocation=(self)</code></article><article><h3>payment</h3><p>Control whether the Payment Request API can be used by the page or embedded content.</p><code>payment=(self)</code></article><article><h3>fullscreen</h3><p>Fullscreen may be intentional for media apps, so evaluate it in application context.</p><code>fullscreen=(self)</code></article></div></div></section>
+<section class="section alt"><div class="wrap"><span class="eyebrow">INTERPRET CAREFULLY</span><h2>A missing Permissions-Policy is not automatically a vulnerability.</h2><p class="copy">This header is a browser capability-control and defense-in-depth mechanism. DeployPass highlights broad or missing controls as review points, but does not assume every application needs the same directive list. Apply least privilege without breaking features your site intentionally uses.</p></div></section>
+<section class="section" id="faq"><div class="wrap faq"><span class="eyebrow">FAQ</span><h2>Permissions Policy checker FAQ</h2><details open><summary>What is Permissions-Policy?</summary><p>It is an HTTP response header that controls whether a document and its embedded frames may use selected browser features.</p></details><details><summary>Is Permissions-Policy the same as Feature-Policy?</summary><p>Permissions-Policy is the newer mechanism that replaced the older Feature-Policy header and uses different syntax.</p></details><details><summary>Does every website need the same policy?</summary><p>No. The safest policy is application-specific. Deny features you do not use and scope required capabilities as narrowly as practical.</p></details><details><summary>Does a high score prove my website is secure?</summary><p>No. This focused checker reviews one public response header. Use the full DeployPass scan for broader public-surface checks and deeper testing for application security.</p></details></div></section></main>
+<footer><div class="wrap foot"><a class="brand" href="/"><svg class="mark" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#2563EB"/><path d="M17 15h16c11 0 19 7 19 17s-8 17-19 17H17V15Zm10 9v16h7c5 0 9-3 9-8s-4-8-9-8h-7Z" fill="#fff"/></svg><span>DeployPass</span></a><span>© 2026 DeployPass · Public-surface deployment security checks.</span><a href="/">Full scan →</a></div></footer>
+<script>
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+document.getElementById('ppForm').addEventListener('submit',async e=>{e.preventDefault();const b=document.getElementById('ppBtn'),st=document.getElementById('ppStatus');b.disabled=true;b.textContent='Checking…';st.style.display='block';st.textContent='Reading Permissions-Policy header…';try{const r=await fetch('/api/permissions-policy',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:document.getElementById('ppUrl').value})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Check failed');document.getElementById('ppResults').style.display='block';document.getElementById('ppScore').innerHTML=d.score+'<small>/100</small>';const v=document.getElementById('ppVerdict');v.textContent=d.verdict;v.className='badge '+(d.verdict==='PASS'?'pass':d.verdict==='FAIL'?'fail':'review');document.getElementById('ppTarget').textContent='Checked '+d.target;document.getElementById('ppStats').innerHTML='<div><b>'+d.directiveCount+'</b><span>DIRECTIVES</span></div><div><b>'+d.restrictedCount+'</b><span>RESTRICTED</span></div><div><b>'+d.broadCount+'</b><span>BROAD</span></div><div><b>'+(d.present?'Yes':'No')+'</b><span>HEADER</span></div>';document.getElementById('ppRaw').textContent=d.raw||'Permissions-Policy: not detected';document.getElementById('ppFindings').innerHTML=d.findings.map(x=>'<div class="finding"><div><b>'+esc(x.title)+'</b><p>'+esc(x.text)+'</p></div><span class="badge '+(x.level==='pass'?'pass':x.level==='fail'?'fail':'review')+'">'+esc(x.label)+'</span></div>').join('');st.textContent='Permissions Policy check complete.';document.getElementById('ppResults').scrollIntoView({behavior:'smooth',block:'start'});}catch(err){st.textContent=err.message||'Check failed';}finally{b.disabled=false;b.textContent='Check policy →';}});
+</script></body></html>`;
+
+async function permissionsPolicyCheck(target){
+  const sample=await fetchTextSample(target,{method:'GET',headers:{'user-agent':UA,'accept':'text/html,application/xhtml+xml,*/*;q=0.8'}},350000);
+  const raw=sample.response.headers.get('permissions-policy')||'';
+  const finalUrl=new URL(sample.response.url||target);
+  const directives=[];
+  if(raw){for(const part of raw.split(',')){const t=part.trim();if(!t)continue;const eq=t.indexOf('=');directives.push({name:(eq>=0?t.slice(0,eq):t).trim().toLowerCase(),value:(eq>=0?t.slice(eq+1):'').trim()});}}
+  const restricted=directives.filter(d=>d.value==='()').length;
+  const broad=directives.filter(d=>/\*/.test(d.value)).length;
+  const important=['camera','microphone','geolocation','payment'];
+  const byName=new Map(directives.map(d=>[d.name,d]));
+  const findings=[]; const add=(level,title,text,label)=>findings.push({level,title,text,label});
+  if(!raw)add('warning','Permissions-Policy header not detected','No Permissions-Policy response header was observed. This can be a hardening opportunity when the application does not need powerful browser features.','REVIEW');
+  else add('pass','Permissions-Policy header detected','The final response includes a Permissions-Policy header.','PASS');
+  for(const name of important){const d=byName.get(name);if(!d)add('warning',name+' is not explicitly controlled','The policy does not declare '+name+'. Review whether this browser feature should be denied or scoped for this application.','REVIEW');else if(d.value==='()')add('pass',name+' is denied','The policy explicitly disables '+name+' for this document.','PASS');else if(/\*/.test(d.value))add('warning',name+' uses a wildcard allowlist','The policy appears to allow '+name+' broadly. Confirm that this is intentional.','REVIEW');else add('pass',name+' is scoped','The policy explicitly scopes '+name+' to a defined allowlist.','PASS');}
+  if(broad>0)add('warning','Broad feature allowlist detected',broad+' directive(s) contain a wildcard. Broad access can be intentional, but should be reviewed.','REVIEW');
+  const score=!raw?60:Math.max(35,100-findings.filter(f=>f.level==='warning').length*8-broad*8);
+  const verdict=!raw?'REVIEW':(score>=85?'PASS':'REVIEW');
+  return {ok:true,target:finalUrl.origin,present:!!raw,raw,directiveCount:directives.length,restrictedCount:restricted,broadCount:broad,score,verdict,findings};
+}
 
 const CORS_HTML = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1251,6 +1308,14 @@ async function mixedContentCheck(target){
   let verdict='PASS'; if(activeCount>0)verdict='FAIL'; else if(passiveCount>0)verdict='REVIEW';
   return {ok:true,target:finalUrl.toString(),pageHttps:finalUrl.protocol==='https:',totalResources:unique.length,insecureCount:issues.length,activeCount,passiveCount,score,verdict,issues:issues.slice(0,50),truncated:sample.truncated};
 }
+
+    if (url.pathname === "/permissions-policy-checker" || url.pathname === "/permissions-policy-checker/") {
+      return new Response(PERMISSIONS_POLICY_HTML, {headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300","x-content-type-options":"nosniff","referrer-policy":"strict-origin-when-cross-origin"}});
+    }
+    if (url.pathname === "/api/permissions-policy") {
+      if (request.method !== "POST") return json({error:"Method not allowed"},405);
+      try { const body=await request.json(); const target=normalizeTarget(body.url); return json(await permissionsPolicyCheck(target)); } catch(e) { return json({error:e.message||"Permissions Policy check failed"},400); }
+    }
 
     if (url.pathname === "/cors-checker" || url.pathname === "/cors-checker/") {
       return new Response(CORS_HTML, {headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300","x-content-type-options":"nosniff","referrer-policy":"strict-origin-when-cross-origin"}});
