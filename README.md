@@ -24,3 +24,11 @@ Replace the repository files with this package and push to GitHub/Cloudflare.
 
 ## v5.1.0 — Website Vulnerability Scanner SEO enhancement
 Expanded /website-vulnerability-scanner with intent-focused explanatory content, eight FAQs, internal links, shorter metadata, and FAQPage / SoftwareApplication / BreadcrumbList JSON-LD. Existing scanner API and other routes are unchanged.
+
+## v5.3.0 — Unified UI / Brand system
+
+- Standardized the DeployPass logo across the homepage and all focused tool / SEO pages.
+- Standardized top navigation labels, spacing, CTA styling and header height.
+- Replaced text/checkmark logo variants with the same blue DeployPass shield-D mark.
+- Normalized landing-page H1 wrapping and long-form body typography.
+- Kept all scanner APIs, SEO copy, routes, sitemap and structured data unchanged.
