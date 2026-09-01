@@ -20,3 +20,7 @@ Replace the repository files with this package and push to GitHub/Cloudflare.
 - Adds the focused-page stylesheet explicitly.
 - Fixes the Permissions Policy backend to use the existing `safeFetch()` helper instead of undefined `fetchTextSample` / `UA` names.
 - Homepage SEO changes and `/permissions-policy-checker` remain included.
+
+
+## v5.1.0 — Website Vulnerability Scanner SEO enhancement
+Expanded /website-vulnerability-scanner with intent-focused explanatory content, eight FAQs, internal links, shorter metadata, and FAQPage / SoftwareApplication / BreadcrumbList JSON-LD. Existing scanner API and other routes are unchanged.
