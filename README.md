@@ -76,3 +76,11 @@ Successful scans are saved best-effort to the `scans` table through the `DB` D1 
 - Adds unique title, meta description, canonical, OG/Twitter metadata, educational content and FAQ.
 - Adds an internal homepage link and includes the new URL in `sitemap.xml`.
 - Keeps the existing 19-check scanner, D1 persistence and shareable report system intact.
+
+## v4.7.0 CORS Checker
+
+- Adds `/cors-checker` and `/api/cors`.
+- Sends a fixed test Origin and an OPTIONS preflight where possible.
+- Reviews Access-Control-Allow-Origin, credentials, methods, request headers, exposed headers and Vary behavior.
+- Avoids treating missing CORS or wildcard public CORS as automatically vulnerable; results explain context.
+- Adds CORS to the homepage tools hub, footer/navigation links and sitemap.
