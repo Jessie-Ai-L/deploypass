@@ -805,7 +805,7 @@ async function scan(target) {
   const verdict=counts.critical?"FAIL":score<90?"REVIEW":"PASS";
   const topFixes=checks.filter(c=>c.level==="critical"||c.level==="warning").sort((a,b)=>(b.level==="critical"?100:weights[b.title]||5)-(a.level==="critical"?100:weights[a.title]||5)).slice(0,3);
 
-  return {ok:true,target:finalUrl.origin,finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v3.3"}};
+  return {ok:true,target:finalUrl.toString(),finalUrl:finalUrl.toString(),score,verdict,counts,checks,topFixes,meta:{durationMs:Date.now()-started,scriptsSampled:fetchedScripts,scope:"passive-public-v3.3"}};
 }
 
 function newReportToken() {
@@ -957,7 +957,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
-      return json({ok:true, service:"deploypass", version:"scanner-v4.7"});
+      return json({ok:true, service:"deploypass", version:"scanner-v4.8.1"});
     }
 
 const HSTS_HTML = `<!doctype html>
@@ -1121,6 +1121,31 @@ async function cspCheck(target){
 
 
 
+
+const FOCUSED_CSS = `
+:root{--blue:#2563eb;--green:#10b981;--orange:#f59e0b;--red:#dc2626;--ink:#0f172a;--muted:#64748b;--line:#dbe4ef;--soft:#f7f9fc}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:#fff;font:15px/1.58 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit}
+.wrap{width:min(1060px,calc(100% - 34px));margin:auto}.top{border-bottom:1px solid var(--line);background:#fff}.nav{height:68px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.mark{width:27px;height:27px;flex:0 0 27px}.brand{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-size:19px;font-weight:900}.brand b{color:var(--blue)}
+.links{display:flex;gap:20px;font-size:12px;font-weight:750}.links a{text-decoration:none}.btn{border:0;border-radius:10px;padding:12px 15px;font:inherit;font-weight:850;cursor:pointer;text-decoration:none;background:var(--ink);color:#fff}
+.hero{padding:64px 0 56px;background:linear-gradient(135deg,#fbfdff,#f3f8ff);border-bottom:1px solid var(--line)}.crumb{font-size:12px;color:var(--muted);margin-bottom:20px}.crumb a{color:var(--blue);text-decoration:none}
+.pill{display:inline-block;border:1px solid #cfe0ff;background:#eef5ff;color:#1d4ed8;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850}.hero h1{font-size:clamp(42px,6vw,64px);line-height:1;letter-spacing:-.05em;margin:16px 0}
+.lead,.copy{font-size:16px;color:#475569;max-width:800px}.form{display:flex;max-width:760px;background:#fff;border:1px solid #cdd9e8;border-radius:12px;padding:5px;margin-top:24px;box-shadow:0 12px 32px rgba(37,99,235,.07)}
+.form input{flex:1;min-width:0;border:0;outline:0;padding:13px;font:inherit}.micro{font-size:11px;color:var(--muted)}.status{max-width:760px;background:#eef5ff;color:#475569;border-radius:9px;padding:10px;margin-top:10px;font-size:12px}
+.results{background:var(--soft);padding:44px 0 62px;border-bottom:1px solid var(--line)}.resultgrid{display:grid;grid-template-columns:210px 1fr;gap:15px}.scorebox,.panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px}
+.label{font-size:11px;color:#64748b;font-weight:800}.big{font-size:52px;font-weight:900;letter-spacing:-.05em;line-height:1}.big small{font-size:16px;color:#64748b}.badge{display:inline-block;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;margin-top:10px}
+.pass{background:#e8f8f0;color:#087a4c}.review{background:#fff4d8;color:#946200}.fail{background:#feeceb;color:#b42318}.panel h2{margin-top:0}.panel>p{color:#64748b}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:15px 0}.stats>div{border:1px solid var(--line);border-radius:12px;padding:13px}.stats b{display:block;font-size:18px}.stats span{font-size:10px;color:#64748b}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0f172a;color:#dbeafe;border-radius:10px;padding:13px;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}
+.finding{display:flex;justify-content:space-between;gap:14px;border-top:1px solid #edf1f6;padding:13px 0}.finding p{margin:4px 0 0;color:#64748b;font-size:12px}
+.section{padding:70px 0}.alt{background:#fbfcfe;border-block:1px solid #eef2f7}.eyebrow{font-size:11px;font-weight:900;color:var(--blue);letter-spacing:.12em}.section h2{font-size:clamp(29px,4vw,40px);line-height:1.08;letter-spacing:-.035em;margin:8px 0 13px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:24px}.cards article{border:1px solid var(--line);border-radius:14px;padding:18px}.cards h3{margin:0 0 7px}.cards p{margin:0;color:#64748b;font-size:12px}.cards code{display:block;margin-top:10px;background:#0f172a;color:#dbeafe;border-radius:9px;padding:10px}
+.faq{max-width:820px}.faq details{border-bottom:1px solid var(--line);padding:15px 0}.faq summary{font-weight:800;cursor:pointer}.faq p{color:#64748b}
+footer{border-top:1px solid var(--line);padding:28px 0;color:#64748b;font-size:11px}.foot{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap}
+@media(max-width:760px){.links{display:none}.form{flex-direction:column}.resultgrid{grid-template-columns:1fr}.stats,.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.stats,.cards{grid-template-columns:1fr}}
+`;
+
 const PERMISSIONS_POLICY_HTML = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Permissions Policy Checker — Test Header Free | DeployPass</title>
@@ -1141,9 +1166,8 @@ document.getElementById('ppForm').addEventListener('submit',async e=>{e.preventD
 </script></body></html>`;
 
 async function permissionsPolicyCheck(target){
-  const sample=await fetchTextSample(target,{method:'GET',headers:{'user-agent':UA,'accept':'text/html,application/xhtml+xml,*/*;q=0.8'}},350000);
-  const raw=sample.response.headers.get('permissions-policy')||'';
-  const finalUrl=new URL(sample.response.url||target);
+  const {res,finalUrl}=await safeFetch(target.toString(),{method:'GET',accept:'text/html,application/xhtml+xml,*/*;q=0.8'});
+  const raw=res.headers.get('permissions-policy')||'';
   const directives=[];
   if(raw){for(const part of raw.split(',')){const t=part.trim();if(!t)continue;const eq=t.indexOf('=');directives.push({name:(eq>=0?t.slice(0,eq):t).trim().toLowerCase(),value:(eq>=0?t.slice(eq+1):'').trim()});}}
   const restricted=directives.filter(d=>d.value==='()').length;
